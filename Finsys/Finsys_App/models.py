@@ -6,6 +6,11 @@ from datetime import timedelta
 from datetime import date
 from django.utils import timezone
 
+
+from decimal import Decimal
+from calendar import monthrange
+
+
 class Fin_Payment_Terms(models.Model):
     payment_terms_number = models.IntegerField(null=True,blank=True)  
     payment_terms_value = models.CharField(max_length=100,null=True,blank=True) 
@@ -1588,3 +1593,51 @@ class Stock_Adjustment_RefNo(models.Model):
     company = models.ForeignKey(Fin_Company_Details,on_delete=models.CASCADE,null=True,blank=True)
     login_details = models.ForeignKey(Fin_Login_Details,on_delete=models.CASCADE,null=True,blank=True)
     reference_no = models.BigIntegerField(null = False, blank=False)
+
+
+class Fin_SalaryDetails(models.Model):
+    company = models.ForeignKey(Fin_Company_Details,on_delete=models.CASCADE,null=True,blank=True)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    login_details = models.ForeignKey(Fin_Login_Details,on_delete=models.CASCADE,null=True,blank=True)
+    attendance = models.ForeignKey(Fin_Attendances,on_delete=models.CASCADE)
+    holiday = models.ForeignKey(Holiday,on_delete=models.CASCADE,blank=True,null=True)
+    salary_date = models.DateField()
+    casual_leave = models.IntegerField()
+    month = models.CharField(max_length=50)
+    year = models.IntegerField()
+    leave = models.IntegerField()
+    basic_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    conveyance_allowance = models.DecimalField(max_digits=10, decimal_places=2)
+    hra = models.DecimalField(max_digits=10, decimal_places=2)
+    other_allowance = models.DecimalField(max_digits=10, decimal_places=2)
+    total_working_days = models.IntegerField(default=0,null=False)
+    other_cuttings = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    add_bonus = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    holiday = models.IntegerField(default=0,null=False)
+    salary = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    status = models.CharField(max_length=50,default='Draft')
+
+    def monthly_salary(self):
+        try:
+            employee_amount = Decimal(self.employee_amount)
+            leave = int(self.leave)
+            other_cuttings = Decimal(self.other_cuttings)
+            add_bonus = Decimal(self.add_bonus)
+            casual_leave =int(self.casual_leave)
+            month_days = monthrange(self.year, self.month)[1]
+            wg = employee_amount / Decimal(month_days)
+            s1 = wg * leave
+            leave_deduction = round((leave - casual_leave) * wg, 2)
+            monthly_salary = (employee_amount - s1 - other_cuttings) + add_bonus
+            monthly_salary += (Decimal(self.casual_leave) * wg) if leave != 0 else 0
+
+            return monthly_salary
+        except (ValueError, Decimal.InvalidOperation):
+            return Decimal(0)    
+
+class Fin_SalaryDetailsHistory(models.Model):
+    company = models.ForeignKey(Fin_Company_Details,on_delete=models.CASCADE,null=True,blank=True)
+    login_details = models.ForeignKey(Fin_Login_Details,on_delete=models.CASCADE,null=True,blank=True)
+    salary_details = models.ForeignKey(Fin_SalaryDetails, on_delete=models.CASCADE)
+    date = models.DateField()
+    action = models.CharField(max_length=50)    

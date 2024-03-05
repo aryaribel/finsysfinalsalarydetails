@@ -562,6 +562,23 @@ urlpatterns = [
     path('deleteitem/<int:id>',views.deleteitem,name='deleteitem'),
     path('stock_attachFile/<int:id>',views.stock_attachFile,name='stock_attachFile'),
     path('stockadjToEmail/<int:id>',views.stockadjToEmail,name='stockadjToEmail'),
+
+
+#-----------------Arya E.R---------------------------#
+
+#------------------Salary Details---------------------------#
+    path('Fin_salary_details',views.Fin_salary_details,name='Fin_salary_details'),
+    path('sort_employee_name_salary/',views.sort_employee_name_salary, name='sort_employee_name_salary'),
+    path('payroll_sort_employeesalary_by_month/',views.payroll_sort_employeesalary_by_month, name='payroll_sort_employeesalary_by_month'),
+    path('filter_by_status_save/', views.filter_by_status_save, name='filter_by_status_save'),
+    path('filter_by_status_draft/', views.filter_by_status_draft, name='filter_by_status_draft'),
+    path('payroll_addsalarydetails/', views.payroll_addsalarydetails, name='payroll_addsalarydetails'),
+    path('listemployee_salary',views.listemployee_salary,name='listemployee_salary'),
+    path('AddEmployeeInSalaryPage',views.AddEmployeeInSalaryPage,name='AddEmployeeInSalaryPage'),
+    path('getDays',views.get_days,name='getDays'),
+    path('calculate_salary/', views.calculate_salary, name='calculate_salary'),
+
+
     
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
 ]
