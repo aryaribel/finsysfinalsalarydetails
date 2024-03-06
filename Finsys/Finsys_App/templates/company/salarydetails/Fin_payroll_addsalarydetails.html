@@ -174,7 +174,7 @@
                     console.log("Employee details received:", data);
                     document.getElementById('holidays').value = data.holiday ;
                     document.getElementById('attendance').value = data.leave ;
-                    document.getElementById('working_days').value = data.working_days ;
+                    document.getElementById('working_days').value = data.total_working_days ;
                 },
                 error: function (error) {
                     console.error("Error fetching employee details:", error);
@@ -255,10 +255,8 @@
                         <div class="d-flex">
                             <select name="employee" id="empl_id" class="form-control" style="width: 95%;" required onchange="fetchEmployeeDetails()">
                                 <option value="NIL">Select Employee</option>
-                                {% for cust in employee %}
-                                    {% if cust.cid_id == cmp1.cid %}
-                                        <option value="{{ cust.employeeid }}">{{ cust.title }} {{ cust.firstname }} {{ cust.lastname }}</option>
-                                    {% endif %}
+                                {% for cust in employees %}
+                                        <option value="{{ cust.id }}">{{ cust.title }} {{ cust.first_name }} {{ cust.last_name }}</option>
                                 {% endfor %}
                             </select>
                             <a class="btn btn-outline-secondary ml-1" role="button" data-target="#employeecreation" data-toggle="modal">+</a>
@@ -878,7 +876,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{% url 'AddEmployeeInSalaryPage' %}" method="POST" autocomplete="off" id="modalEmployee">
+                <form action="{% url 'AddEmployeeInSalaryPage' %}" method="POST" autocomplete="on" id="modalEmployee" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="card-body">
                         <div class="card-title">

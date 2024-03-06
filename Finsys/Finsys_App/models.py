@@ -1600,7 +1600,6 @@ class Fin_SalaryDetails(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     login_details = models.ForeignKey(Fin_Login_Details,on_delete=models.CASCADE,null=True,blank=True)
     attendance = models.ForeignKey(Fin_Attendances,on_delete=models.CASCADE)
-    holiday = models.ForeignKey(Holiday,on_delete=models.CASCADE,blank=True,null=True)
     salary_date = models.DateField()
     casual_leave = models.IntegerField()
     month = models.CharField(max_length=50)

@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'Finsys.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Finsys_database_salarydetails',
+        'NAME': 'Finsys_db_salarydetails',
         'USER':'root',
         'PASSWORD':'',
         'HOST':'localhost',
