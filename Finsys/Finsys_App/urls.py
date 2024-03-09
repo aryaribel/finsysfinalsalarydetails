@@ -575,10 +575,11 @@ urlpatterns = [
     path('payroll_addsalarydetails/', views.payroll_addsalarydetails, name='payroll_addsalarydetails'),
     path('listemployee_salary',views.listemployee_salary,name='listemployee_salary'),
     path('AddEmployeeInSalaryPage',views.AddEmployeeInSalaryPage,name='AddEmployeeInSalaryPage'),
-    path('getDays',views.get_days,name='getDays'),
+    path('getDays',views.getDays,name='getDays'),
     path('calculate_salary/', views.calculate_salary, name='calculate_salary'),
     path('item_dropdown', views.item_dropdown, name='item_dropdown'),
     re_path(r'^itemdata$', views.itemdata, name='itemdata'),
+    path('Fin_salary_overview/<str:employee_id>/<int:salary_id>/', views.Fin_salary_overview, name='Fin_salary_overview'),
 
 
     

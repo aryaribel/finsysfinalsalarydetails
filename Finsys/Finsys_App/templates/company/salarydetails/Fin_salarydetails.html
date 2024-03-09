@@ -60,16 +60,21 @@
           </tr>
         </thead>
         <tbody>
-          {% for a in customers %}
+          {% for salary_detail in salary_details %}
           <tr class="clickable-row" data-href="" style="cursor: pointer;">
             <td>{{ forloop.counter }}</td>
-            <td>{{ a.first_name }} {{ a.last_name }}</td>
-            <td>{{ a.gst_type }}</td>
-            <td>{{ a.gstin | default:None}}</td>
-            <td>{{ a.email }}</td>
-            <td>{{ a.opening_balance }}</td>
-            <td>{{ a.status }}</td>
-            <td>{{ a.current_balance }}</td>
+            <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.employeeid salary_id=salary_detail.id %}">{{ salary_detail.employee.title }} {{ salary_detail.employee.first_name }} {{ salary_detail.employee.last_name }}</a></td>
+            <td>{{ salary_detail.employee.employee_number }}</td>
+            <td>{{ salary_detail.month_name }}-{{ salary_detail.year }}</td>
+            <td>{{ salary_detail.total_salary}}</td>
+            <td>
+                {% if salary_detail.status == 'draft' %}
+                    Draft
+                {% elif salary_detail.status == 'save' %}
+                    Save
+                {% endif %}
+            </td>
+           
           </tr>
           {% endfor %}
         </tbody>
@@ -98,7 +103,7 @@
     const ws = XLSX.utils.table_to_sheet(Table);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "Customers.xlsx");
+    XLSX.writeFile(wb, "Employee.xlsx");
   });
 
   jQuery(document).ready(function ($) {

@@ -18340,13 +18340,12 @@ def Fin_salary_details(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
-           
+            print('hii',salary_details)   
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-
         for salary_detail in salary_details:
                 try:
                     salary_detail.month = int(salary_detail.month)
@@ -18480,7 +18479,7 @@ def filter_by_status_draft(request):
 
 
 def payroll_addsalarydetails(request):
-     if 's_id' in request.session:
+    if 's_id' in request.session:
         s_id = request.session['s_id']
         data = Fin_Login_Details.objects.get(id = s_id)
         if data.User_Type == "Company":
@@ -18496,8 +18495,7 @@ def payroll_addsalarydetails(request):
 
         cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
         if request.method == 'POST':
-            if not request.user.is_authenticated:
-                return redirect('regcomp') 
+           
             employee_id = request.POST.get('employee')
             selected_employee =Employee.objects.get(id=employee_id, company=cmp1)        
             # Validate and convert form data
@@ -18514,9 +18512,9 @@ def payroll_addsalarydetails(request):
             monthly_salary = Decimal(monthly_salary_str) if monthly_salary_str.replace('.', '', 1).isdigit() else Decimal(0)  # Ensure a valid decimal
             month = int(request.POST.get('month'))
             year = int(request.POST.get('year', 0))
-            if selected_employee.amount:
+            if selected_employee.salary_amount:
                 _, num_days = monthrange(year, month)
-                selected_employee_amount = Decimal(selected_employee.amount)
+                selected_employee_amount = Decimal(selected_employee.salary_amount)
                 daily_wage = selected_employee_amount / num_days
                 leave_deduction = round((leave - casual_leave) * daily_wage)
             else:
@@ -18571,6 +18569,9 @@ def payroll_addsalarydetails(request):
 
         }
         return render(request, 'company/salarydetails/Fin_payroll_addsalarydetails.html', context)
+    else:
+      
+      return redirect('/')
 
 def listemployee_salary(request):   
         if request.method == 'POST':
@@ -18740,7 +18741,7 @@ def AddEmployeeInSalaryPage(request):
             print('sorry')
             return redirect('payroll_addsalarydetails') 
 
-def get_days(request):
+def getDays(request):
      if 's_id' in request.session:
         s_id = request.session['s_id']
         data = Fin_Login_Details.objects.get(id = s_id)
@@ -18767,6 +18768,7 @@ def get_days(request):
 
             employee_id = request.POST.get('id')
             empid = Employee.objects.get(id=employee_id)
+            print('hello',empid)
             month = request.POST.get('month')
             year = request.POST.get('year')
             month = int(month)
@@ -18784,9 +18786,9 @@ def get_days(request):
                 start_date = start_date.strftime("%Y-%m-%d")
                 end_date = end_date.strftime("%Y-%m-%d")
                 leave_count = Fin_Attendances.objects.filter(
-                    id=empid,
+                    employee=empid,
                     company=comp,
-                    date__range=(start_date, end_date),
+                    start_date__range=(start_date, end_date),
                     status='Leave'
                 ).count()
                 holidays_count = Holiday.objects.filter(company=comp,start_date__range=(start_date, end_date)).count()
@@ -18891,3 +18893,35 @@ def itemdata(request):
             return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst})
         return redirect('/')
 
+def Fin_salary_overview(request, employee_id, salary_id=None):
+    try:
+        cmp1 = company.objects.get(id=request.session["uid"])
+        employee = payrollemployee.objects.get(employeeid=employee_id, cid=cmp1)
+        if salary_id:
+            salary_details = SalaryDetails1.objects.filter(employee=employee, id=salary_id)
+        else:
+            salary_details = SalaryDetails1.objects.filter(employee=employee)
+
+        for salary_detail in salary_details:
+            try:
+                salary_detail.month = int(salary_detail.month)
+                salary_detail.month_name = calendar.month_name[salary_detail.month]
+            except (ValueError, IndexError):
+                salary_detail.month_name = 'Invalid Month'
+
+            salary_detail.total_deduction = salary_detail.other_cuttings + salary_detail.leave_deduction
+            salary_detail.leave_minus_casual_leave = salary_detail.leave - salary_detail.casual_leave
+
+    except company.DoesNotExist:
+        return JsonResponse({'error': 'Company not found'}, status=404)
+    except payrollemployee.DoesNotExist:
+        return JsonResponse({'error': 'Employee not found'}, status=404)
+
+    context = {
+        'employee': employee,
+        'salary_details': salary_details,
+        'cmp1': cmp1,
+        
+    }
+
+    return render(request, 'app1/salary_overview.html', context)

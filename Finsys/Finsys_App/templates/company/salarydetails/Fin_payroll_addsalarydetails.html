@@ -174,7 +174,7 @@
                     console.log("Employee details received:", data);
                     document.getElementById('holidays').value = data.holiday ;
                     document.getElementById('attendance').value = data.leave ;
-                    document.getElementById('working_days').value = data.total_working_days ;
+                    document.getElementById('working_days').value = data.working_days ;
                 },
                 error: function (error) {
                     console.error("Error fetching employee details:", error);
@@ -313,7 +313,7 @@
                 <div class="row mt-3">
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Leave</label>
-                        <input type="text" class="form-control" id="attendance" name="attendance" readonly >
+                        <input type="text" class="form-control" id="attendance" name="attendance">
                     </div>
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Casual Leave</label>
