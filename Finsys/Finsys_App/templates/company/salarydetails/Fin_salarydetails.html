@@ -63,7 +63,7 @@
           {% for salary_detail in salary_details %}
           <tr class="clickable-row" data-href="" style="cursor: pointer;">
             <td>{{ forloop.counter }}</td>
-            <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.employeeid salary_id=salary_detail.id %}">{{ salary_detail.employee.title }} {{ salary_detail.employee.first_name }} {{ salary_detail.employee.last_name }}</a></td>
+            <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.id salary_id=salary_detail.id %}">{{ salary_detail.employee.title }} {{ salary_detail.employee.first_name }} {{ salary_detail.employee.last_name }}</a></td>
             <td>{{ salary_detail.employee.employee_number }}</td>
             <td>{{ salary_detail.month_name }}-{{ salary_detail.year }}</td>
             <td>{{ salary_detail.total_salary}}</td>

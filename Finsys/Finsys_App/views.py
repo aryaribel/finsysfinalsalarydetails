@@ -44,6 +44,7 @@ from decimal import Decimal
 
 
 import calendar
+from django.http import Http404
 
 
 def Fin_index(request):
@@ -18894,34 +18895,129 @@ def itemdata(request):
         return redirect('/')
 
 def Fin_salary_overview(request, employee_id, salary_id=None):
-    try:
-        cmp1 = company.objects.get(id=request.session["uid"])
-        employee = payrollemployee.objects.get(employeeid=employee_id, cid=cmp1)
-        if salary_id:
-            salary_details = SalaryDetails1.objects.filter(employee=employee, id=salary_id)
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+           
+
         else:
-            salary_details = SalaryDetails1.objects.filter(employee=employee)
-
-        for salary_detail in salary_details:
-            try:
-                salary_detail.month = int(salary_detail.month)
-                salary_detail.month_name = calendar.month_name[salary_detail.month]
-            except (ValueError, IndexError):
-                salary_detail.month_name = 'Invalid Month'
-
-            salary_detail.total_deduction = salary_detail.other_cuttings + salary_detail.leave_deduction
-            salary_detail.leave_minus_casual_leave = salary_detail.leave - salary_detail.casual_leave
-
-    except company.DoesNotExist:
-        return JsonResponse({'error': 'Company not found'}, status=404)
-    except payrollemployee.DoesNotExist:
-        return JsonResponse({'error': 'Employee not found'}, status=404)
-
-    context = {
-        'employee': employee,
-        'salary_details': salary_details,
-        'cmp1': cmp1,
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
         
-    }
+        try:
+            cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
+            employee = Employee.objects.get(id=employee_id, company=cmp1)
+            if salary_id:
+                salary_details = Fin_SalaryDetails.objects.filter(employee=employee, id=salary_id)
+            else:
+                salary_details = Fin_SalaryDetails.objects.filter(employee=employee)
 
-    return render(request, 'app1/salary_overview.html', context)
+            for salary_detail in salary_details:
+                try:
+                    salary_detail.month = int(salary_detail.month)
+                    salary_detail.month_name = calendar.month_name[salary_detail.month]
+                except (ValueError, IndexError):
+                    salary_detail.month_name = 'Invalid Month'
+
+                salary_detail.total_deduction = salary_detail.other_cuttings + salary_detail.leave_deduction
+                salary_detail.leave_minus_casual_leave = salary_detail.leave - salary_detail.casual_leave
+
+        except Fin_Company_Details.DoesNotExist:
+            return JsonResponse({'error': 'Company not found'}, status=404)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+
+        context = {
+            'employee': employee,
+            'salary_details': salary_details,
+            'cmp1': cmp1,
+            
+        }
+
+        return render(request, 'company/salarydetails/Fin_salary_overview.html', context)
+    else:
+      
+      return redirect('/')
+
+def Fin_salaryedit(request, employee_id,salary_id=None):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+        
+        try:
+            cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
+            employee = Employee.objects.get(employeeid=employee_id, company=cmp1)
+            if salary_id:
+                salary_detail = Fin_SalaryDetails.objects.get(employee=employee, id=salary_id)
+            else:
+                salary_detail, created = Fin_SalaryDetails.objects.get_or_create(employee=employee)
+            
+        
+        except Employee.DoesNotExist:
+            raise Http404("Employee not found")
+        except Fin_SalaryDetails.DoesNotExist:
+            raise Http404("Salary details not found")
+        
+        salary_detail.month = int(salary_detail.month)
+        salary_detail.month_name = calendar.month_name[salary_detail.month]
+        print("Employee ID:", employee.employeeid)
+        print("Salary ID:", salary_id) 
+        print("Salary Month:", salary_detail.month)
+        
+
+        if request.method == 'POST':
+            salary_detail.salary_date = request.POST.get('salary_date')
+            salary_detail.month = request.POST.get('month')
+            salary_detail.year = request.POST.get('year')
+            salary_detail.casual_leave = request.POST.get('casual_leave')
+            salary_detail.leave = request.POST.get('attendance')
+            salary_detail.holiday = request.POST.get('holidays')
+            salary_detail.other_cuttings = request.POST.get('other_cuttings')
+            salary_detail.add_bonus = request.POST.get('add_bonus')
+            salary_detail.working_days = request.POST.get('working_days')
+            salary_detail.description = request.POST.get('description')
+            salary_detail.total_salary = request.POST.get('monthly_salary')
+            salary_detail.status = 'save' if request.POST.get('submit') == 'save' else 'draft'
+
+            salary_detail.save()
+            return redirect('salary_overview', employee_id=employee.employeeid, salary_id=salary_detail.id)
+        
+        employees = Employee.objects.filter(cid=cmp1)
+        months = [{'value': i, 'name': calendar.month_name[i], 'selected': i == salary_detail.month} for i in range(1, 13)]
+        years = range(2000, 2030)
+        years = range(2000, 2030)
+        holiday = Holiday.objects.filter(company=cmp1)
+        leave = Fin_Attendances.objects.filter(company=cmp1)
+
+        context = {
+            'salary_detail': salary_detail,
+            'employee': employee,
+            'employees': employees,
+            'months': months,
+            'years': years,
+            'cmp1': cmp1,
+            'leave': 0,
+            'holiday': 0,
+            'working_days': 0,
+            'month_name': calendar.month_name[salary_detail.month],
+        }
+
+        return render(request, 'app1/salaryedit.html', context) 
+    else:
+      
+      return redirect('/')     
