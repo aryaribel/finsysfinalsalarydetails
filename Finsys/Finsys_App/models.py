@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from decimal import Decimal
 from calendar import monthrange
-
+from django.utils import timezone
 
 class Fin_Payment_Terms(models.Model):
     payment_terms_number = models.IntegerField(null=True,blank=True)  

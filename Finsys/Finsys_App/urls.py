@@ -580,7 +580,7 @@ urlpatterns = [
     path('item_dropdown', views.item_dropdown, name='item_dropdown'),
     re_path(r'^itemdata$', views.itemdata, name='itemdata'),
     path('Fin_salary_overview/<str:employee_id>/<int:salary_id>/', views.Fin_salary_overview, name='Fin_salary_overview'),
-    path('Fin_salaryedit/<str:employee_id>/<int:salary_id>/', views.Fin_salaryedit, name ='Fin_salaryedit'),
+    path('Fin_salarypdf/<int:employee_id>/<int:salary_id>/', views.Fin_salarypdf, name='Fin_salarypdf'),
 
 
     

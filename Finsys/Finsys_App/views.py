@@ -18894,6 +18894,25 @@ def itemdata(request):
             return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst})
         return redirect('/')
 
+def Fin_viewCustomer(request,id):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        cust = Fin_Customers.objects.get(id = id)
+        cmt = Fin_Customers_Comments.objects.filter(customer = cust)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            hist = Fin_Customers_History.objects.filter(Company = com, customer = cust).last()
+            return render(request,'company/Fin_View_Customer.html',{'allmodules':allmodules,'com':com,'data':data, 'customer':cust, 'history':hist, 'comments':cmt})
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            hist = Fin_Customers_History.objects.filter(Company = com.company_id, customer = cust).last()
+            return render(request,'company/Fin_View_Customer.html',{'allmodules':allmodules,'com':com,'data':data, 'customer':cust, 'history':hist, 'comments':cmt})
+    else:
+       return redirect('/')
+
 def Fin_salary_overview(request, employee_id, salary_id=None):
     if 's_id' in request.session:
         s_id = request.session['s_id']
@@ -18901,17 +18920,20 @@ def Fin_salary_overview(request, employee_id, salary_id=None):
         if data.User_Type == "Company":
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com)
-           
+            salary_details = Fin_SalaryDetails.objects.get(id=salary_id)
+            print('hi',salary_id)
+            hist = Fin_SalaryDetailsHistory.objects.filter(company = com).last()
+   
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-        
+            salary_details = Fin_SalaryDetails.objects.get(id=salary_id)
+            hist = Fin_SalaryDetailsHistory.objects.filter(Company = com.company_id).last()
+
         try:
-            cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-            employee = Employee.objects.get(id=employee_id, company=cmp1)
+            employee = Employee.objects.get(id=employee_id)
+            print(employee)
             if salary_id:
                 salary_details = Fin_SalaryDetails.objects.filter(employee=employee, id=salary_id)
             else:
@@ -18935,16 +18957,19 @@ def Fin_salary_overview(request, employee_id, salary_id=None):
         context = {
             'employee': employee,
             'salary_details': salary_details,
-            'cmp1': cmp1,
-            
+            'allmodules':allmodules,
+            'com':com,
+            'data':data,
+            'history':hist,
+            'salary_id':salary_id,
         }
 
-        return render(request, 'company/salarydetails/Fin_salary_overview.html', context)
+        return render(request, 'company/salarydetails/Fin_salary_overviewnew.html', context)
     else:
       
       return redirect('/')
 
-def Fin_salaryedit(request, employee_id,salary_id=None):
+def Fin_salarypdf(request, employee_id, salary_id):
     if 's_id' in request.session:
         s_id = request.session['s_id']
         data = Fin_Login_Details.objects.get(id = s_id)
@@ -18952,72 +18977,51 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
-           
+            print(salary_details)
+
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-        
+
+
         try:
             cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-            employee = Employee.objects.get(employeeid=employee_id, company=cmp1)
-            if salary_id:
-                salary_detail = Fin_SalaryDetails.objects.get(employee=employee, id=salary_id)
-            else:
-                salary_detail, created = Fin_SalaryDetails.objects.get_or_create(employee=employee)
+            employee = Employee.objects.get(id=employee_id, company=cmp1)
+            salary_details = get_object_or_404(Fin_SalaryDetails, id=salary_id, employee=employee)
+
+            try:
+                salary_details.month = int(salary_details.month)
+                salary_details.month_name = calendar.month_name[salary_details.month]
+            except (ValueError, IndexError):
+                salary_details.month_name = 'Invalid Month'
             
-        
+            total_deduction = salary_details.other_cuttings + salary_details.leave_deduction
+            leave_minus_casual_leave = salary_details.leave - salary_details.casual_leave
+
+        except Fin_Company_Details.DoesNotExist:
+            return HttpResponse('Company not found', status=404)
         except Employee.DoesNotExist:
-            raise Http404("Employee not found")
-        except Fin_SalaryDetails.DoesNotExist:
-            raise Http404("Salary details not found")
-        
-        salary_detail.month = int(salary_detail.month)
-        salary_detail.month_name = calendar.month_name[salary_detail.month]
-        print("Employee ID:", employee.employeeid)
-        print("Salary ID:", salary_id) 
-        print("Salary Month:", salary_detail.month)
-        
+            return HttpResponse('Employee not found', status=404)
 
-        if request.method == 'POST':
-            salary_detail.salary_date = request.POST.get('salary_date')
-            salary_detail.month = request.POST.get('month')
-            salary_detail.year = request.POST.get('year')
-            salary_detail.casual_leave = request.POST.get('casual_leave')
-            salary_detail.leave = request.POST.get('attendance')
-            salary_detail.holiday = request.POST.get('holidays')
-            salary_detail.other_cuttings = request.POST.get('other_cuttings')
-            salary_detail.add_bonus = request.POST.get('add_bonus')
-            salary_detail.working_days = request.POST.get('working_days')
-            salary_detail.description = request.POST.get('description')
-            salary_detail.total_salary = request.POST.get('monthly_salary')
-            salary_detail.status = 'save' if request.POST.get('submit') == 'save' else 'draft'
-
-            salary_detail.save()
-            return redirect('salary_overview', employee_id=employee.employeeid, salary_id=salary_detail.id)
-        
-        employees = Employee.objects.filter(cid=cmp1)
-        months = [{'value': i, 'name': calendar.month_name[i], 'selected': i == salary_detail.month} for i in range(1, 13)]
-        years = range(2000, 2030)
-        years = range(2000, 2030)
-        holiday = Holiday.objects.filter(company=cmp1)
-        leave = Fin_Attendances.objects.filter(company=cmp1)
-
+        template_path = 'company/salarydetails/Fin_salarypdf.html'
         context = {
-            'salary_detail': salary_detail,
             'employee': employee,
-            'employees': employees,
-            'months': months,
-            'years': years,
             'cmp1': cmp1,
-            'leave': 0,
-            'holiday': 0,
-            'working_days': 0,
-            'month_name': calendar.month_name[salary_detail.month],
+            'salary_details': [salary_details],  
+            'total_deduction': total_deduction,
+            'leave_minus_casual_leave': leave_minus_casual_leave,
         }
 
-        return render(request, 'app1/salaryedit.html', context) 
-    else:
-      
-      return redirect('/')     
+        fname = f"payslip_{employee.first_name}.{employee.last_name}"
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename={fname}.pdf'
+        template = get_template(template_path)
+        html = template.render(context)
+        pisa_status = pisa.CreatePDF(html, dest=response)
+
+        if pisa_status.err:
+            return HttpResponse('We had some errors <pre>' + html + '</pre>')
+
+        return response  
