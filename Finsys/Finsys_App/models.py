@@ -1642,4 +1642,8 @@ class Fin_SalaryDetailsHistory(models.Model):
     login_details = models.ForeignKey(Fin_Login_Details,on_delete=models.CASCADE,null=True,blank=True)
     salary_details = models.ForeignKey(Fin_SalaryDetails, on_delete=models.CASCADE)
     date = models.DateField()
-    action = models.CharField(max_length=50)    
+    action_choices = [
+        ('Created', 'Created'),
+        ('Edited', 'Edited'),
+    ]
+    action = models.CharField(max_length=50,null=True,blank=True,choices=action_choices)    

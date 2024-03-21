@@ -64,16 +64,16 @@
           <tr class="clickable-row" data-href="" style="cursor: pointer;">
             <td>{{ forloop.counter }}</td>
             <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.id salary_id=salary_detail.id %}">{{ salary_detail.employee.title }} {{ salary_detail.employee.first_name }} {{ salary_detail.employee.last_name }}</a></td>
-            <td>{{ salary_detail.employee.employee_number }}</td>
-            <td>{{ salary_detail.month_name }}-{{ salary_detail.year }}</td>
-            <td>{{ salary_detail.total_salary}}</td>
-            <td>
+            <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.id salary_id=salary_detail.id %}">{{ salary_detail.employee.employee_number }}</a></td>
+            <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.id salary_id=salary_detail.id %}">{{ salary_detail.month_name }}-{{ salary_detail.year }}</a></td>
+            <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.id salary_id=salary_detail.id %}">{{ salary_detail.total_salary}}</a></td>
+            <td><a href="{% url 'Fin_salary_overview' employee_id=salary_detail.employee.id salary_id=salary_detail.id %}">
                 {% if salary_detail.status == 'draft' %}
                     Draft
                 {% elif salary_detail.status == 'save' %}
                     Save
                 {% endif %}
-            </td>
+              </a> </td>
            
           </tr>
           {% endfor %}
