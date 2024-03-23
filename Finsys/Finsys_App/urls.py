@@ -585,7 +585,6 @@ urlpatterns = [
     path('Fin_deletesalary/<str:employee_id>/<int:salary_id>/', views.Fin_deletesalary, name='Fin_deletesalary'),
     path('Fin_addEmployeeComment/<int:employee_id>/<int:salary_id>/',views.Fin_addEmployeeComment, name='Fin_addEmployeeComment'),
     path('Fin_deleteEmployeeComment/<int:id>/<int:salary_id>/',views.Fin_deleteEmployeeComment, name='Fin_deleteEmployeeComment'),
-    # path('Fin_changeEmployeeStatus/<int:id>/<str:status>',views.Fin_changeEmployeeStatus, name='Fin_changeEmployeeStatus'),
     path('Fin_salaryedit/<int:employee_id>/<int:salary_id>/', views.Fin_salaryedit, name ='Fin_salaryedit'),
     path('Fin_SalaryHistory/<int:id>',views.Fin_SalaryHistory, name='Fin_SalaryHistory'),
 

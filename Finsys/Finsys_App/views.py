@@ -18367,15 +18367,16 @@ def sort_employee_name_salary(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
            
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
 
-        cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-        salary_details = Fin_SalaryDetails.objects.filter(company=cmp1).order_by('employee__first_name', 'employee__last_name')
+        salary_details = Fin_SalaryDetails.objects.filter(company=company).order_by('employee__first_name', 'employee__last_name')
         for salary_detail in salary_details:
             try:
                 salary_detail.month_name = calendar.month_name[int(salary_detail.month)]
@@ -18383,7 +18384,7 @@ def sort_employee_name_salary(request):
                 salary_detail.month_name = 'Invalid Month'
             salary_detail.save()  
     
-        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details, 'cmp1': cmp1,'allmodules':allmodules,'com':com,'data':data})
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
 
     else:
        return redirect('/')
@@ -18397,16 +18398,17 @@ def payroll_sort_employeesalary_by_month(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
            
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
 
-        cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
         
-        salary_details = Fin_SalaryDetails.objects.filter(company=cmp1).order_by('month', 'year')
+        salary_details = Fin_SalaryDetails.objects.filter(company=company).order_by('month', 'year')
         for salary_detail in salary_details:
             try:
                 salary_detail.month_name = calendar.month_name[int(salary_detail.month)]
@@ -18414,7 +18416,7 @@ def payroll_sort_employeesalary_by_month(request):
                 salary_detail.month_name = 'Invalid Month'
             salary_detail.save()  
 
-        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details, 'cmp1': cmp1,'allmodules':allmodules,'com':com,'data':data})
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
     else:
       
       return redirect('/')
@@ -18427,15 +18429,16 @@ def filter_by_status_save(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
-           
+            company=com
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
 
-        cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-        salary_details = Fin_SalaryDetails.objects.filter(company=cmp1, status='save').order_by('employee__first_name', 'employee__last_name')
+
+        salary_details = Fin_SalaryDetails.objects.filter(company=company, status='save').order_by('employee__first_name', 'employee__last_name')
         for salary_detail in salary_details:
             try:
                 salary_detail.month_name = calendar.month_name[int(salary_detail.month)]
@@ -18443,7 +18446,7 @@ def filter_by_status_save(request):
                 salary_detail.month_name = 'Invalid Month'
             salary_detail.save()  
        
-        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details, 'cmp1': cmp1,'allmodules':allmodules,'com':com,'data':data})
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
      else:
       
       return redirect('/')
@@ -18456,15 +18459,16 @@ def filter_by_status_draft(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
            
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id  
 
-        cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-        salary_details = Fin_SalaryDetails.objects.filter(company=cmp1, status='draft').order_by('employee__first_name', 'employee__last_name')
+        salary_details = Fin_SalaryDetails.objects.filter(company=company, status='draft').order_by('employee__first_name', 'employee__last_name')
 
         for salary_detail in salary_details:
             try:
@@ -18473,7 +18477,7 @@ def filter_by_status_draft(request):
                 salary_detail.month_name = 'Invalid Month'
             salary_detail.save()  
 
-        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details, 'cmp1': cmp1,'allmodules':allmodules,'com':com,'data':data})
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
      else:
       
       return redirect('/')
@@ -18493,9 +18497,8 @@ def payroll_addsalarydetails(request):
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-            company=com.company
+            company=com.company_id
 
-        com = Fin_Company_Details.objects.get(id=request.session["s_id"])
         if request.method == 'POST':
            
             employee_id = request.POST.get('employee')
@@ -18574,8 +18577,8 @@ def payroll_addsalarydetails(request):
             'holiday': 0,
             'working_days': 0, 
             'allmodules':allmodules,
-            'com':com,
             'data':data,
+            'salary_details':salary_details,
 
         }
         return render(request, 'company/salarydetails/Fin_payroll_addsalarydetails.html', context)
@@ -18583,36 +18586,50 @@ def payroll_addsalarydetails(request):
       
       return redirect('/')
 
-def listemployee_salary(request):   
-        if request.method == 'POST':
-            if 's_id' in request.session:
-                s_id = request.session.get('s_id')
-            else:
-                return JsonResponse({'error': 'Session UID not found'}, status=401)
-            try:
-                comp = Fin_Company_Details.objects.get(id=s_id)
-            except Fin_Company_Details.DoesNotExist:
-                return JsonResponse({'error': 'Company not found'}, status=404)
-            employee_id = request.POST.get('id').split(" ")[0]
-            print('hii',employee_id)
-            try:
-                cust = Employee.objects.get(id=employee_id, company=comp)
-                employee_mail = cust.employee_mail
-                employee_number = cust.employee_number
-                date_of_joining = cust.date_of_joining
-                salary_amount = cust.salary_amount
-                employee_designation = cust.employee_designation
-                return JsonResponse({
-                    'email': employee_mail,
-                    'employeeno': employee_number,
-                    'joindate': date_of_joining,
-                    'amount': salary_amount,
-                    'designation': employee_designation,                
-                }, safe=False)
-            except Employee.DoesNotExist:
-                return JsonResponse({'error': 'Selected employee not found.'}, status=404)
+def listemployee_salary(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id  
+
+            if request.method == 'POST':
+                if 's_id' in request.session:
+                    s_id = request.session.get('s_id')
+                else:
+                    return JsonResponse({'error': 'Session UID not found'}, status=401)
             
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+                employee_id = request.POST.get('id').split(" ")[0]
+                try:
+                    cust = Employee.objects.get(id=employee_id, company=company)
+                    employee_mail = cust.employee_mail
+                    employee_number = cust.employee_number
+                    date_of_joining = cust.date_of_joining
+                    salary_amount = cust.salary_amount
+                    employee_designation = cust.employee_designation
+                    return JsonResponse({
+                        'email': employee_mail,
+                        'employeeno': employee_number,
+                        'joindate': date_of_joining,
+                        'amount': salary_amount,
+                        'designation': employee_designation, 
+                        
+                        
+
+                    }, safe=False)
+                except Employee.DoesNotExist:
+                    return JsonResponse({'error': 'Selected employee not found.'}, status=404)
+                
+            return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 import calendar
@@ -18640,14 +18657,16 @@ def AddEmployeeInSalaryPage(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
            
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
         try: 
-            cmpId = Fin_Company_Details.objects.get(id=request.session["s_id"]) 
             if request.method == 'POST':
                 title = request.POST['title']
                 first_name = request.POST['firstname'].replace(' ','')
@@ -18711,7 +18730,7 @@ def AddEmployeeInSalaryPage(request):
                     file = '' 
                 
                 emppayroll = Employee(title=title,first_name=first_name,
-                                            last_name=last_name,alias=alias,company=cmpId,
+                                            last_name=last_name,alias=alias,company=company,
                                             employee_current_location=employee_current_location,
                                             employee_mail=employee_mail,
                                             mobile=mobile,
@@ -18759,26 +18778,24 @@ def getDays(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
            
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
         if request.method == 'POST':
             if 's_id' in request.session:
                 s_id = request.session.get('s_id')
             else:
                 return JsonResponse({'error': 'Session UID not found'}, status=401)
 
-            try:
-                comp = Fin_Company_Details.objects.get(id=s_id)
-            except Fin_Company_Details.DoesNotExist:
-                return JsonResponse({'error': 'Company not found'}, status=404)
-
+           
             employee_id = request.POST.get('id')
             empid = Employee.objects.get(id=employee_id)
-            print('hello',empid)
             month = request.POST.get('month')
             year = request.POST.get('year')
             month = int(month)
@@ -18797,11 +18814,11 @@ def getDays(request):
                 end_date = end_date.strftime("%Y-%m-%d")
                 leave_count = Fin_Attendances.objects.filter(
                     employee=empid,
-                    company=comp,
+                    company=company,
                     start_date__range=(start_date, end_date),
                     status='Leave'
                 ).count()
-                holidays_count = Holiday.objects.filter(company=comp,start_date__range=(start_date, end_date)).count()
+                holidays_count = Holiday.objects.filter(company=company,start_date__range=(start_date, end_date)).count()
                 print(holidays_count,leave_count)
                 _, num_days = calendar.monthrange(year, month)
                 working_days = num_days - holidays_count
@@ -18811,7 +18828,8 @@ def getDays(request):
                         'month': MONTH_NAMES.get(month, ''),
                         'holiday': holidays_count,
                         'leave': leave_count,   
-                        'working_days' : working_days,         
+                        'working_days' : working_days, 
+                                
                     }, safe=False)
 
                 except Employee.DoesNotExist:
@@ -18827,18 +18845,17 @@ def calculate_salary(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
            
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
         if request.method == 'POST':
-            try:
-                comp = Fin_Company_Details.objects.get(id=request.session["s_id"])
-            except Fin_Company_Details.DoesNotExist:
-                return JsonResponse({'error': 'Company not found'}, status=404)
-            
+           
             casual_leave = int(request.POST.get('casual_leave', 0))
             other_cuttings = Decimal(request.POST.get('other_cuttings', 0))
             add_bonus = Decimal(request.POST.get('add_bonus', 0))
@@ -18881,46 +18898,30 @@ def itemdata(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
            
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
         
-            cmp1 = Fin_Company_Details.objects.get(id=request.session['s_id'])
             id = request.GET.get('id')
             toda = date.today()
             tod = toda.strftime("%Y-%m-%d")
             # to = toda.strftime("%d-%m-%Y")
-            item = Fin_Items.objects.get(name=id,company=cmp1)
+            item = Fin_Items.objects.get(name=id,company=company)
             hsn = item.hsn
             qty = item.stock
             price = item.purchase_cost
             gst = item.intra_st
             sgst = item.inter_st
-            places=cmp1.state
-            return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst})
+            places=company.state
+            return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst,'data':data,'allmodules':allmodules,'com':com})
         return redirect('/')
 
-def Fin_viewCustomer(request,id):
-    if 's_id' in request.session:
-        s_id = request.session['s_id']
-        data = Fin_Login_Details.objects.get(id = s_id)
-        cust = Fin_Customers.objects.get(id = id)
-        cmt = Fin_Customers_Comments.objects.filter(customer = cust)
-        if data.User_Type == "Company":
-            com = Fin_Company_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
-            hist = Fin_Customers_History.objects.filter(Company = com, customer = cust).last()
-            return render(request,'company/Fin_View_Customer.html',{'allmodules':allmodules,'com':com,'data':data, 'customer':cust, 'history':hist, 'comments':cmt})
-        else:
-            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
-            hist = Fin_Customers_History.objects.filter(Company = com.company_id, customer = cust).last()
-            return render(request,'company/Fin_View_Customer.html',{'allmodules':allmodules,'com':com,'data':data, 'customer':cust, 'history':hist, 'comments':cmt})
-    else:
-       return redirect('/')
+
 
 def Fin_salary_overview(request, employee_id, salary_id):
     if 's_id' in request.session:
@@ -18985,18 +18986,18 @@ def Fin_salarypdf(request, employee_id, salary_id):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
-            print(salary_details)
+            company=com
 
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
 
 
         try:
-            cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-            employee = Employee.objects.get(id=employee_id, company=cmp1)
+            employee = Employee.objects.get(id=employee_id, company=company)
             salary_details = get_object_or_404(Fin_SalaryDetails, id=salary_id, employee=employee)
 
             try:
@@ -19016,7 +19017,7 @@ def Fin_salarypdf(request, employee_id, salary_id):
         template_path = 'company/salarydetails/Fin_salarypdf.html'
         context = {
             'employee': employee,
-            'cmp1': cmp1,
+            'com': com,
             'salary_details': [salary_details],  
             'total_deduction': total_deduction,
             'leave_minus_casual_leave': leave_minus_casual_leave,
@@ -19042,13 +19043,14 @@ def Fin_shareSalaryToEmail(request, employee_id, salary_id):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
-            print(salary_details)
+            company=com
 
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
 
         if request.user:
             try:
@@ -19058,14 +19060,14 @@ def Fin_shareSalaryToEmail(request, employee_id, salary_id):
                     emails_list = [email.strip() for email in emails_string.split(',')]
                     email_message = request.POST['email_message']
 
-                    cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-                    employee = Employee.objects.get(id=employee_id, company=cmp1)
+                    employee = Employee.objects.get(id=employee_id, company=company)
                     salary_details = get_object_or_404( Fin_SalaryDetails, id=salary_id, employee=employee)
 
                     context = {
                         'employee': employee,
-                        'cmp1': cmp1,
+                        'com': com,
                         'salary_details': [salary_details],
+                        'allmodules':allmodules,
                     }
 
                     template_path = 'company/salarydetails/Fin_salarypdf.html'
@@ -19100,19 +19102,35 @@ def Fin_shareSalaryToEmail(request, employee_id, salary_id):
                 return redirect('Fin_salary_overview', employee_id=employee_id, salary_id=salary_id)
 
         return HttpResponse("Unauthorized", status=401)
-
+    else:
+      
+      return redirect('/')
 
 
 def Fin_deletesalary(request,employee_id,salary_id=None):
-    cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
-    employee = Employee.objects.get(id=employee_id, company=cmp1)
-    if salary_id:
-        salary_detail = get_object_or_404(Fin_SalaryDetails, id=salary_id, employee=employee)
-        salary_detail.delete()
-    else:
-        salary_details = Fin_SalaryDetails.objects.filter(employee=employee)
-        salary_details.delete()
-    return redirect('Fin_salary_details') 
+     if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+        employee = Employee.objects.get(id=employee_id, company=company)
+        if salary_id:
+            salary_detail = get_object_or_404(Fin_SalaryDetails, id=salary_id, employee=employee)
+            salary_detail.delete()
+        else:
+            salary_details = Fin_SalaryDetails.objects.filter(employee=employee)
+            salary_details.delete()
+        return redirect('Fin_salary_details') 
 
 
 
@@ -19170,10 +19188,9 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-            company=com.company
+            company=com.company_id
 
         try:
-            # cmp1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
             employee = Employee.objects.get(id=employee_id, company=company)
             if salary_id:
                 salary_detail = Fin_SalaryDetails.objects.get(employee=employee, id=salary_id)
