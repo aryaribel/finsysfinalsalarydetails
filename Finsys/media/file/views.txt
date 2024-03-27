@@ -1,0 +1,953 @@
+#-------------Views (new)-----------------#
+
+#------------------------Arya E.R---------------------------------------#
+        
+#------------------------------Salary Details---------------------------------------#
+
+def Fin_salary_details(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            print('hii',salary_details)   
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+        for salary_detail in salary_details:
+                try:
+                    salary_detail.month = int(salary_detail.month)
+                    salary_detail.month_name = calendar.month_name[salary_detail.month]
+                except (ValueError, IndexError):
+                    salary_detail.month_name = 'Invalid Month'
+                salary_detail.save()  
+              
+        return render(request,'company/salarydetails/Fin_salarydetails.html',{'allmodules':allmodules,'com':com,'data':data,'salary_details':salary_details})
+    else:
+       return redirect('/')
+
+def sort_employee_name_salary(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        salary_details = Fin_SalaryDetails.objects.filter(company=company).order_by('employee__first_name', 'employee__last_name')
+        for salary_detail in salary_details:
+            try:
+                salary_detail.month_name = calendar.month_name[int(salary_detail.month)]
+            except (ValueError, IndexError):
+                salary_detail.month_name = 'Invalid Month'
+            salary_detail.save()  
+    
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
+
+    else:
+       return redirect('/')
+
+
+def payroll_sort_employeesalary_by_month(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        
+        salary_details = Fin_SalaryDetails.objects.filter(company=company).order_by('month', 'year')
+        for salary_detail in salary_details:
+            try:
+                salary_detail.month_name = calendar.month_name[int(salary_detail.month)]
+            except (ValueError, IndexError):
+                salary_detail.month_name = 'Invalid Month'
+            salary_detail.save()  
+
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
+    else:
+      
+      return redirect('/')
+
+def filter_by_status_save(request):
+     if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+
+        salary_details = Fin_SalaryDetails.objects.filter(company=company, status='save').order_by('employee__first_name', 'employee__last_name')
+        for salary_detail in salary_details:
+            try:
+                salary_detail.month_name = calendar.month_name[int(salary_detail.month)]
+            except (ValueError, IndexError):
+                salary_detail.month_name = 'Invalid Month'
+            salary_detail.save()  
+       
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
+     else:
+      
+      return redirect('/')
+
+def filter_by_status_draft(request):
+     if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id  
+
+        salary_details = Fin_SalaryDetails.objects.filter(company=company, status='draft').order_by('employee__first_name', 'employee__last_name')
+
+        for salary_detail in salary_details:
+            try:
+                salary_detail.month_name = calendar.month_name[int(salary_detail.month)]
+            except (ValueError, IndexError):
+                salary_detail.month_name = 'Invalid Month'
+            salary_detail.save()  
+
+        return render(request, 'company/salarydetails/Fin_salarydetails.html', {'salary_details': salary_details,'allmodules':allmodules,'com':com,'data':data})
+     else:
+      
+      return redirect('/')
+
+
+def payroll_addsalarydetails(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        if request.method == 'POST':
+           
+            employee_id = request.POST.get('employee')
+            selected_employee =Employee.objects.get(id=employee_id, company=company)        
+            # Validate and convert form data
+            casual_leave = int(request.POST.get('casual_leave', 0))
+            other_cuttings = Decimal(request.POST.get('other_cuttings', 0))
+            add_bonus = Decimal(request.POST.get('add_bonus', 0))
+            salary_str = request.POST.get('salary', '0')  # Provide a default string value
+            salary = Decimal(salary_str) if salary_str.replace('.', '', 1).isdigit() else Decimal(0)  # Ensure a valid decimal
+            leaves_str = request.POST.get('attendance', '0')  # Provide a default string value
+            leave = Decimal(leaves_str) if leaves_str.replace('.', '', 1).isdigit() else Decimal(0)  # Ensure a valid decimal
+            holiday = int(request.POST.get('holidays', 0))
+            total_working_days = int(request.POST.get('working_days', 0))
+            monthly_salary_str = request.POST.get('monthly_salary', '0')  # Provide a default string value
+            monthly_salary = Decimal(monthly_salary_str) if monthly_salary_str.replace('.', '', 1).isdigit() else Decimal(0)  # Ensure a valid decimal
+            month = int(request.POST.get('month'))
+            year = int(request.POST.get('year', 0))
+            if selected_employee.salary_amount:
+                _, num_days = monthrange(year, month)
+                selected_employee_amount = Decimal(selected_employee.salary_amount)
+                daily_wage = selected_employee_amount / num_days
+                leave_deduction = round((leave - casual_leave) * daily_wage)
+            else:
+                leave_deduction = 0
+            print(f"Leave Deduction: {leave_deduction}")
+
+            submit = request.POST.get('submit')
+            if submit == "save":
+                status = "save"
+            else:
+                status = "draft"
+
+
+            salary_detail = Fin_SalaryDetails(
+                employee=selected_employee,
+                company=company,
+                salary_date=request.POST.get('salary_date'),
+                month=request.POST.get('month'),
+                year=request.POST.get('year'),
+                casual_leave=casual_leave,
+                leave = leave,
+                holiday=holiday,
+                other_cuttings=other_cuttings,
+                add_bonus=add_bonus,
+                description=request.POST.get('description'),
+                total_salary=monthly_salary,
+                total_working_days=total_working_days,
+                leave_deduction=leave_deduction,
+                status=status,
+                
+            )
+            salary_detail.save()
+            sal_history_obj = Fin_SalaryDetailsHistory()
+            sal_history_obj.company=company
+            sal_history_obj.login_details=data
+            sal_history_obj.salary_details=salary_detail
+            sal_history_obj.date=date.today()
+            sal_history_obj.action='Created'
+
+            
+            sal_history_obj.save()
+            return redirect('Fin_salary_details')
+
+        months = list(calendar.month_name)[1:]
+        years = range(2000, 2030)
+        employees = Employee.objects.filter(company=company)
+        holiday = Holiday.objects.filter(company=company)
+
+        context = {
+            'months': months,
+            'years': years,
+            'employees': employees,
+            'com': com,
+            'leave': 0,
+            'holiday': 0,
+            'working_days': 0, 
+            'allmodules':allmodules,
+            'data':data,
+            'salary_details':salary_details,
+
+        }
+        return render(request, 'company/salarydetails/Fin_payroll_addsalarydetails.html', context)
+    else:
+      
+      return redirect('/')
+
+def listemployee_salary(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id  
+
+            if request.method == 'POST':
+                if 's_id' in request.session:
+                    s_id = request.session.get('s_id')
+                else:
+                    return JsonResponse({'error': 'Session UID not found'}, status=401)
+            
+                employee_id = request.POST.get('id').split(" ")[0]
+                try:
+                    cust = Employee.objects.get(id=employee_id, company=company)
+                    employee_mail = cust.employee_mail
+                    employee_number = cust.employee_number
+                    date_of_joining = cust.date_of_joining
+                    salary_amount = cust.salary_amount
+                    employee_designation = cust.employee_designation
+                    return JsonResponse({
+                        'email': employee_mail,
+                        'employeeno': employee_number,
+                        'joindate': date_of_joining,
+                        'amount': salary_amount,
+                        'designation': employee_designation, 
+                        
+                        
+
+                    }, safe=False)
+                except Employee.DoesNotExist:
+                    return JsonResponse({'error': 'Selected employee not found.'}, status=404)
+                
+            return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+import calendar
+MONTH_NAMES = {
+            1: 'January',
+            2: 'February',
+            3: 'March',
+            4: 'April',
+            5: 'May',
+            6: 'June',
+            7: 'July',
+            8: 'August',
+            9: 'September',
+            10: 'October',
+            11: 'November',
+            12: 'December',
+        }            
+
+
+def AddEmployeeInSalaryPage(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        try: 
+            if request.method == 'POST':
+                title = request.POST['title']
+                first_name = request.POST['firstname'].replace(' ','')
+                last_name = request.POST['lastname'].replace(' ','')
+                alias = request.POST['alias']
+                employee_current_location = request.POST['location']
+                employee_mail = request.POST['email']
+            
+                mobile = request.POST['mobile']
+                employees = request.POST['employees']
+                date_of_joining = request.POST['joindate']
+                try:
+                    img1 = request.FILES.get('image')
+                except:
+                    img1 = 'default' 
+                salary_details = request.POST['salarydetails']
+                salary_effective_from = request.POST['effectivefrom']
+                pay_head = request.POST['payhead']
+                total_working_hours = request.POST['hours']
+                rate = request.POST['rate']
+                salary_amount = request.POST['amount']
+                employee_number = request.POST['employeeno']
+                employee_designation = request.POST['designation']
+                function = request.POST['function']
+                gender = request.POST['gender']
+                date_of_birth = request.POST['dateofbirth']
+                blood_group = request.POST['bloodgroup']
+                fathers_name_mothers_name = request.POST['fathersmothersname']
+                spouse_name = request.POST['spousename']
+                
+            
+                emergency_contact = request.POST['generalphone']
+                provide_bank_details = request.POST['bankdetails']
+                account_number = request.POST['acno']
+                ifsc = request.POST['ifsccode']
+                name_of_bank = request.POST['bankname']
+                branch_name = request.POST['branchname']
+                bank_transaction_type = request.POST['transactiontype']
+                pan_number = request.POST['pannumber']
+                universal_account_number = request.POST['universalaccountnumber']
+                pf_account_number = request.POST['pfaccountnumber']
+                pr_account_number = request.POST['praccountnumber']
+                esi_number = request.POST['esinumber']
+                tds_applicable = request.POST['tdsapp']
+                tds_type = request.POST['tdstype']
+                tds = request.POST['tds']
+                street = request.POST['street']
+                city = request.POST['city']
+                state = request.POST['state']
+                pincode = request.POST['pincode']
+                country = request.POST['country']
+                temporary_street = request.POST['tempstreet']
+                temporary_city = request.POST['tempcity']
+                temporary_state = request.POST['tempstate']
+                temporary_pincode = request.POST['temppincode']
+                temporary_country = request.POST['tempcountry'] 
+                aadhar_number = request.POST['adharnumber'] 
+                try:
+                    file = request.FILES.get('file')
+                except:
+                    file = '' 
+                
+                emppayroll = Employee(title=title,first_name=first_name,
+                                            last_name=last_name,alias=alias,company=company,
+                                            employee_current_location=employee_current_location,
+                                            employee_mail=employee_mail,
+                                            mobile=mobile,
+                                            date_of_joining=date_of_joining,
+                                            salary_details=salary_details,salary_effective_from=salary_effective_from,
+                                            total_working_hours =total_working_hours,
+                                            salary_amount=salary_amount,employee_number=employee_number,
+                                            employee_designation=employee_designation,function=function,
+                                            gender=gender,date_of_birth=date_of_birth,
+                                            blood_group=blood_group,fathers_name_mothers_name=fathers_name_mothers_name,
+                                            spouse_name= spouse_name,
+                                            emergency_contact=emergency_contact,
+                                            provide_bank_details=provide_bank_details,account_number=account_number,ifsc=ifsc,
+                                            name_of_bank=name_of_bank, branch_name= branch_name,
+                                            bank_transaction_type=bank_transaction_type,pan_number=pan_number,
+                                            universal_account_number=universal_account_number,
+                                            pf_account_number=pf_account_number,pr_account_number= pr_account_number,
+                                            esi_number= esi_number,tds_applicable=tds_applicable,
+                                            tds_type=tds_type,street=street,
+                                            city=city,state=state,
+                                            pincode=pincode,country=country,
+                                            temporary_street=temporary_street,temporary_city=temporary_city,
+                                            temporary_state=temporary_state,temporary_pincode=temporary_pincode,
+                                            temporary_country=temporary_country,pay_head=pay_head,
+                                            aadhar_number=aadhar_number
+                                            )
+                if img1 != 'default':
+                    emppayroll.upload_image = img1
+
+                if file !="":
+                    emppayroll.upload_file=file
+
+                emppayroll.save()
+                print('done')
+                return redirect('payroll_addsalarydetails')
+        except:    
+            print('sorry')
+            return redirect('payroll_addsalarydetails') 
+
+def getDays(request):
+     if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        if request.method == 'POST':
+            if 's_id' in request.session:
+                s_id = request.session.get('s_id')
+            else:
+                return JsonResponse({'error': 'Session UID not found'}, status=401)
+
+           
+            employee_id = request.POST.get('id')
+            empid = Employee.objects.get(id=employee_id)
+            print('hello',empid)
+            month = request.POST.get('month')
+            year = request.POST.get('year')
+            month = int(month)
+            year = int(year)
+            try:
+                result = Fin_SalaryDetails.objects.get(employee=empid, month=month, year=year)
+                if result:
+                    return JsonResponse({'error': 'Salary Already Executed.'}, status=404)
+            except Fin_SalaryDetails.DoesNotExist:
+                start_date = datetime(year, month, 1)
+                if month == 12:
+                    end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
+                else:
+                    end_date = datetime(year, month % 12 + 1, 1) - timedelta(days=1)
+                start_date = start_date.strftime("%Y-%m-%d")
+                end_date = end_date.strftime("%Y-%m-%d")
+                leave_count = Fin_Attendances.objects.filter(
+                    employee=empid,
+                    company=company,
+                    start_date__range=(start_date, end_date),
+                    status='Leave'
+                ).count()
+                holidays_count = Holiday.objects.filter(company=company,start_date__range=(start_date, end_date)).count()
+                print(holidays_count,leave_count)
+                _, num_days = calendar.monthrange(year, month)
+                working_days = num_days - holidays_count
+                
+                try:
+                    return JsonResponse({
+                        'month': MONTH_NAMES.get(month, ''),
+                        'holiday': holidays_count,
+                        'leave': leave_count,   
+                        'working_days' : working_days, 
+                                
+                    }, safe=False)
+
+                except Employee.DoesNotExist:
+                    return JsonResponse({'error': 'Selected employee not found.'}, status=404)
+
+        return JsonResponse({'error': 'Invalid request method'}, status=400) 
+
+def calculate_salary(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        if request.method == 'POST':
+           
+            casual_leave = int(request.POST.get('casual_leave', 0))
+            other_cuttings = Decimal(request.POST.get('other_cuttings', 0))
+            add_bonus = Decimal(request.POST.get('add_bonus', 0))
+            salary = Decimal(request.POST.get('salary', 0))
+            leave = int(request.POST.get('attendance', 0))
+            holiday = int(request.POST.get('holiday', 0))
+            month = int(request.POST.get('month'))
+            year = int(request.POST.get('year', 0))
+            _, num_days = monthrange(year, month)
+            wg = salary / num_days
+            s1 = wg * leave
+            leave_deduction = round((leave - casual_leave) * wg, 2)
+            monthly_salary = (salary - s1 - other_cuttings) + add_bonus
+            monthly_salary = int(monthly_salary)
+            if leave == 0:
+                pass
+            else:
+                monthly_salary += (casual_leave * wg)
+
+            return JsonResponse({'monthly_salary': monthly_salary, 'leave_deduction': leave_deduction})
+
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+def item_dropdown(request):
+
+    company1 = Fin_Company_Details.objects.get(id=request.session["s_id"])
+
+    options = {}
+    option_objects = Fin_Items.objects.filter(company=company1)
+    for option in option_objects:
+        options[option.id] = [option.name]
+
+    return JsonResponse(options) 
+
+def itemdata(request):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+           
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+        
+            id = request.GET.get('id')
+            toda = date.today()
+            tod = toda.strftime("%Y-%m-%d")
+            # to = toda.strftime("%d-%m-%Y")
+            item = Fin_Items.objects.get(name=id,company=company)
+            hsn = item.hsn
+            qty = item.stock
+            price = item.purchase_cost
+            gst = item.intra_st
+            sgst = item.inter_st
+            places=company.state
+            return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst,'data':data,'allmodules':allmodules,'com':com})
+        return redirect('/')
+
+
+
+def Fin_salary_overview(request, employee_id, salary_id):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.get(id=salary_id)
+            hist = Fin_SalaryDetailsHistory.objects.filter(company = com,salary_details__id=salary_id).last()
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.get(id=salary_id)
+            hist = Fin_SalaryDetailsHistory.objects.filter(company = com.company_id,salary_details__id=salary_id).last()
+
+        try:
+            employee = Employee.objects.get(id=employee_id)
+            comments= Employee_Comment.objects.filter(employee=employee)
+            if salary_id:
+                salary_details = Fin_SalaryDetails.objects.filter(employee=employee, id=salary_id)
+            else:
+                salary_details = Fin_SalaryDetails.objects.filter(employee=employee)
+
+            for salary_detail in salary_details:
+                try:
+                    salary_detail.month = int(salary_detail.month)
+                    salary_detail.month_name = calendar.month_name[salary_detail.month]
+                except (ValueError, IndexError):
+                    salary_detail.month_name = 'Invalid Month'
+
+                salary_detail.total_deduction = salary_detail.other_cuttings + salary_detail.leave_deduction
+                salary_detail.leave_minus_casual_leave = salary_detail.leave - salary_detail.casual_leave
+
+        except Fin_Company_Details.DoesNotExist:
+            return JsonResponse({'error': 'Company not found'}, status=404)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+
+        context = {
+            'employee': employee,
+            'salary_details': salary_details,
+            'allmodules':allmodules,
+            'com':com,
+            'data':data,
+            'history':hist,
+            'salary_id':salary_id,
+            'comments':comments,
+        }
+
+        return render(request, 'company/salarydetails/Fin_salary_overviewnew.html', context)
+    else:
+      
+      return redirect('/')
+
+def Fin_salarypdf(request, employee_id, salary_id):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+
+        try:
+            employee = Employee.objects.get(id=employee_id, company=company)
+            salary_details = get_object_or_404(Fin_SalaryDetails, id=salary_id, employee=employee)
+
+            try:
+                salary_details.month = int(salary_details.month)
+                salary_details.month_name = calendar.month_name[salary_details.month]
+            except (ValueError, IndexError):
+                salary_details.month_name = 'Invalid Month'
+            
+            total_deduction = salary_details.other_cuttings + salary_details.leave_deduction
+            leave_minus_casual_leave = salary_details.leave - salary_details.casual_leave
+
+        except Fin_Company_Details.DoesNotExist:
+            return HttpResponse('Company not found', status=404)
+        except Employee.DoesNotExist:
+            return HttpResponse('Employee not found', status=404)
+
+        template_path = 'company/salarydetails/Fin_salarypdf.html'
+        context = {
+            'employee': employee,
+            'com': com,
+            'salary_details': [salary_details],  
+            'total_deduction': total_deduction,
+            'leave_minus_casual_leave': leave_minus_casual_leave,
+        }
+
+        fname = f"payslip_{employee.first_name}.{employee.last_name}"
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename={fname}.pdf'
+        template = get_template(template_path)
+        html = template.render(context)
+        pisa_status = pisa.CreatePDF(html, dest=response)
+
+        if pisa_status.err:
+            return HttpResponse('We had some errors <pre>' + html + '</pre>')
+
+        return response  
+
+def Fin_shareSalaryToEmail(request, employee_id, salary_id):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        if request.user:
+            try:
+                if request.method == 'POST':
+                    emails_string = request.POST['email_ids']
+
+                    emails_list = [email.strip() for email in emails_string.split(',')]
+                    email_message = request.POST['email_message']
+
+                    employee = Employee.objects.get(id=employee_id, company=company)
+                    salary_details = get_object_or_404( Fin_SalaryDetails, id=salary_id, employee=employee)
+
+                    context = {
+                        'employee': employee,
+                        'com': com,
+                        'salary_details': [salary_details],
+                        'allmodules':allmodules,
+                    }
+
+                    template_path = 'company/salarydetails/Fin_salarypdf.html'
+                    template = get_template(template_path)
+                    html = template.render(context)
+
+                    result = BytesIO()
+                    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+                    pdf = result.getvalue()
+
+                    filename = f'Salary_Statement_{employee.employee_number}.pdf'
+                    subject = f"Salary Statement for {employee.first_name} {employee.last_name}"
+                    from_email = settings.EMAIL_HOST_USER 
+                    to_email = emails_list
+
+                    email = EmailMessage(subject, email_message, from_email, to_email)
+                    email.attach(filename, pdf, "application/pdf")
+                    email.send(fail_silently=False)
+
+                    messages.success(request, 'Salary statement has been shared via email successfully..!')
+                    return redirect('Fin_salary_overview', employee_id=employee_id, salary_id=salary_id)
+            
+            except Exception as e:
+                print(f"An exception occurred: {e}")
+
+                # Print more information for debugging
+                print(f"employee_id: {employee_id}")
+                print(f"salary_id: {salary_id}")
+                print(f"request.user.id: {request.user.id}")
+
+                messages.error(request, f'{e}')
+                return redirect('Fin_salary_overview', employee_id=employee_id, salary_id=salary_id)
+
+        return HttpResponse("Unauthorized", status=401)
+    else:
+      
+      return redirect('/')
+
+
+def Fin_deletesalary(request,employee_id,salary_id=None):
+     if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+        employee = Employee.objects.get(id=employee_id, company=company)
+        if salary_id:
+            salary_detail = get_object_or_404(Fin_SalaryDetails, id=salary_id, employee=employee)
+            salary_detail.delete()
+        else:
+            salary_details = Fin_SalaryDetails.objects.filter(employee=employee)
+            salary_details.delete()
+        return redirect('Fin_salary_details') 
+
+
+
+def Fin_addEmployeeComment(request,employee_id,salary_id):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id).company_id
+        
+        employee = Employee.objects.get(id=employee_id,company=com)
+        print('hii',employee_id,salary_id)
+
+        if request.method == "POST":
+            cmt = request.POST['comment'].strip()
+
+            Employee_Comment.objects.create(company = com, employee = employee, comment = cmt)
+            return redirect(Fin_salary_overview, employee_id,salary_id)
+        return redirect(Fin_salary_overview, employee_id,salary_id)
+    return redirect('/')        
+
+def Fin_deleteEmployeeComment(request,id,salary_id):
+    if 's_id' in request.session:
+        try:
+            cmt = Employee_Comment.objects.get(id = id)
+            empId = cmt.employee.id
+            cmt.delete()
+            return redirect(Fin_salary_overview, empId,salary_id)  
+        except Employee_Comment.DoesNotExist:
+            sal_details=Fin_SalaryDetails.objects.get(id=salary_id)
+            empId = sal_details.employee.id
+            return redirect(Fin_salary_overview, empId,salary_id)  
+        
+# def Fin_changeEmployeeStatus(request,id,status):
+#     if 's_id' in request.session:
+        
+#         cust = Employee.objects.get(id = id)
+#         cust.status = status
+#         cust.save()
+#         return redirect(Fin_salary_overview, id)        
+
+def Fin_salaryedit(request, employee_id,salary_id=None):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com)
+            company=com
+
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+            company=com.company_id
+
+        try:
+            employee = Employee.objects.get(id=employee_id, company=company)
+            if salary_id:
+                salary_detail = Fin_SalaryDetails.objects.get(employee=employee, id=salary_id)
+            else:
+                salary_detail, created = Fin_SalaryDetails.objects.get_or_create(employee=employee)
+            
+        
+        except Employee.DoesNotExist:
+            raise Http404("Employee not found")
+        except Fin_SalaryDetails.DoesNotExist:
+            raise Http404("Salary details not found")
+        
+        salary_detail.month = int(salary_detail.month)
+        salary_detail.month_name = calendar.month_name[salary_detail.month]
+        # print("Employee ID:", employee.employeeid)
+        # print("Salary ID:", salary_id) 
+        # print("Salary Month:", salary_detail.month)
+        
+
+        if request.method == 'POST':
+            salary_detail=Fin_SalaryDetails.objects.get(id=salary_id)
+            salary_detail.salary_date = request.POST.get('salary_date')
+            salary_detail.month = request.POST.get('month')
+            salary_detail.year = request.POST.get('year')
+            salary_detail.casual_leave = request.POST.get('casual_leave')
+            salary_detail.leave = request.POST.get('attendance')
+            salary_detail.holiday = request.POST.get('holidays')
+            salary_detail.other_cuttings = request.POST.get('other_cuttings')
+            salary_detail.add_bonus = request.POST.get('add_bonus')
+            salary_detail.total_working_days = request.POST.get('working_days')
+            salary_detail.description = request.POST.get('description')
+            salary_detail.total_salary = request.POST.get('monthly_salary')
+            salary_detail.status = 'save' if request.POST.get('submit') == 'save' else 'draft'
+
+            salary_detail.save()
+            sal_history_obj = Fin_SalaryDetailsHistory()
+            sal_history_obj.company=company
+            sal_history_obj.login_details=data
+            sal_history_obj.salary_details=salary_detail
+            sal_history_obj.date=date.today()
+            sal_history_obj.action='Edited'
+
+            
+            sal_history_obj.save()
+            return redirect('Fin_salary_overview', employee_id=salary_detail.employee.id, salary_id=salary_detail.id)
+        
+        employees = Employee.objects.filter(company=company)
+        months = [{'value': i, 'name': calendar.month_name[i], 'selected': i == salary_detail.month} for i in range(1, 13)]
+        years = range(2000, 2030)
+        years = range(2000, 2030)
+        holiday =  Holiday.objects.filter(company=company)
+        leave = Fin_Attendances.objects.filter(company=company)
+
+        context = {
+            'salary_detail': salary_detail,
+            'employee': employee,
+            'employees': employees,
+            'months': months,
+            'years': years,
+            'com': com,
+            'leave': 0,
+            'holiday': 0,
+            'working_days': 0,
+            'month_name': calendar.month_name[salary_detail.month],
+        }
+
+        return render(request, 'company/salarydetails/Fin_salaryedit.html', context)
+
+def Fin_SalaryHistory(request,id):
+    if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+        cust = Employee.objects.get(id = id)
+        salary_details  = Fin_SalaryDetails.objects.filter(employee=cust)
+
+        his = Fin_SalaryDetailsHistory.objects.filter(salary_details__in = salary_details)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            return render(request,'company/salarydetails/Fin_salary_History.html',{'allmodules':allmodules,'com':com,'data':data,'history':his, 'employee':cust})
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            return render(request,'company/salarydetails/Fin_salary_History.html',{'allmodules':allmodules,'com':com,'data':data,'history':his, 'employee':cust})
+    else:
+       return redirect('/')   
+
+#-------------------------End-----------------------#

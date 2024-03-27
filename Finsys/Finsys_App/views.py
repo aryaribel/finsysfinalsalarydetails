@@ -45,7 +45,8 @@ from decimal import Decimal
 
 import calendar
 from django.http import Http404
-
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 def Fin_index(request):
     return render(request,'Fin_index.html')
@@ -18587,22 +18588,7 @@ def payroll_addsalarydetails(request):
       return redirect('/')
 
 def listemployee_salary(request):
-    if 's_id' in request.session:
-        s_id = request.session['s_id']
-        data = Fin_Login_Details.objects.get(id = s_id)
-        if data.User_Type == "Company":
-            com = Fin_Company_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com)
-            company=com
-
-        else:
-            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-            company=com.company_id  
-
-            if request.method == 'POST':
+    if request.method == 'POST':
                 if 's_id' in request.session:
                     s_id = request.session.get('s_id')
                 else:
@@ -18610,7 +18596,7 @@ def listemployee_salary(request):
             
                 employee_id = request.POST.get('id').split(" ")[0]
                 try:
-                    cust = Employee.objects.get(id=employee_id, company=company)
+                    cust = Employee.objects.get(id=employee_id)
                     employee_mail = cust.employee_mail
                     employee_number = cust.employee_number
                     date_of_joining = cust.date_of_joining
@@ -18629,8 +18615,9 @@ def listemployee_salary(request):
                 except Employee.DoesNotExist:
                     return JsonResponse({'error': 'Selected employee not found.'}, status=404)
                 
-            return JsonResponse({'error': 'Invalid request method'}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+            
 
 import calendar
 MONTH_NAMES = {
@@ -18978,6 +18965,7 @@ def Fin_salary_overview(request, employee_id, salary_id):
       
       return redirect('/')
 
+
 def Fin_salarypdf(request, employee_id, salary_id):
     if 's_id' in request.session:
         s_id = request.session['s_id']
@@ -19023,18 +19011,22 @@ def Fin_salarypdf(request, employee_id, salary_id):
             'leave_minus_casual_leave': leave_minus_casual_leave,
         }
 
+            # Render the template to HTML string
+        html = render_to_string(template_path, context)
+
         fname = f"payslip_{employee.first_name}.{employee.last_name}"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename={fname}.pdf'
-        template = get_template(template_path)
-        html = template.render(context)
+        
+        # Generate PDF from HTML string
         pisa_status = pisa.CreatePDF(html, dest=response)
 
         if pisa_status.err:
             return HttpResponse('We had some errors <pre>' + html + '</pre>')
 
-        return response  
+        return response
 
+       
 def Fin_shareSalaryToEmail(request, employee_id, salary_id):
     if 's_id' in request.session:
         s_id = request.session['s_id']
@@ -19083,8 +19075,10 @@ def Fin_shareSalaryToEmail(request, employee_id, salary_id):
                     from_email = settings.EMAIL_HOST_USER 
                     to_email = emails_list
 
-                    email = EmailMessage(subject, email_message, from_email, to_email)
-                    email.attach(filename, pdf, "application/pdf")
+
+                    email = EmailMultiAlternatives(subject, email_message, from_email, to_email)
+                    # email.attach_alternative(html, "text/html")  # Attach HTML content
+                    email.attach(filename, pdf, "application/pdf")  # Attach PDF file
                     email.send(fail_silently=False)
 
                     messages.success(request, 'Salary statement has been shared via email successfully..!')
