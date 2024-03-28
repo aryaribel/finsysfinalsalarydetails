@@ -193,6 +193,7 @@
             var leave = $('#attendance').val()|| 0;
             var month = $('#month').val();  
             var year = $('#year').val();  
+            console.log('hii',salary)
             $.ajax({
                 type: 'POST',
                 url: "{% url 'calculate_salary' %}",
@@ -233,6 +234,8 @@
     
     
     <div class="page-content">
+        <span class="d-flex justify-content-end p-2" style="cursor: pointer;" onclick="window.location.href=`{% url 'Fin_salary_details' %}`"><i class="fa fa-times-circle text-white" style="font-size: 1.2rem;"></i></span>
+
         <h2 id="hel"></h2>
         <div class="card radius-15">
             <div class="card-body">
@@ -271,7 +274,7 @@
                     </div>
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Salary</label>
-                        <input type="hidden" id="Salary" value="{{employee.id}}">
+                        <input type="hidden" value="{{employee.id}}">
 
                         <input type="number" class="form-control" id="Salary" name="Salary" placeholder="Salary" value="{{employee.salary_amount}}" required>
                     </div>

@@ -18342,7 +18342,6 @@ def Fin_salary_details(request):
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
-            print('hii',salary_details)   
 
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
