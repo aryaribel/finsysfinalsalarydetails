@@ -93,6 +93,10 @@
             document.getElementById('joindate').value = data.joindate || '';
             document.getElementById('Salary').value = data.amount || '';
             document.getElementById('designation').value = data.designation || '';
+            document.getElementById('hra').value = data.hra || 0;
+            document.getElementById('Conveyance_Allowance').value = data.Conveyance_Allowance || 0;
+            document.getElementById('Other_Allowance').value = data.Other_Allowance || 0;
+
             
             {% comment %} if (data.holidays_data) {
             var holidaysList = data.holidays_data.map(function (holiday) {
@@ -185,6 +189,7 @@
     </script>
     <script>
         function calculateSalary() { 
+            console.log('button clicked')
             var casualLeave = $('#casual_leave').val() || 0;
             var otherCuttings = $('#other_cuttings').val() || 0;
             var addBonus = $('#add_bonus').val() || 0;
@@ -193,6 +198,9 @@
             var leave = $('#attendance').val()|| 0;
             var month = $('#month').val();  
             var year = $('#year').val();  
+            var Other_Allowance = $('#Other_Allowance').val()|| 0;
+            var hra = $('#hra').val()|| 0;  
+            var Conveyance_Allowance = $('#Conveyance_Allowance').val()|| 0;  
 
             $.ajax({
                 type: 'POST',
@@ -207,6 +215,9 @@
                     salary:salary,
                     month: month,
                     year: year,
+                    Other_Allowance:Other_Allowance,
+                    hra:hra,
+                    Conveyance_Allowance:Conveyance_Allowance,
                     csrfmiddlewaretoken: '{{ csrf_token }}',
                 },
                 dataType: 'json',
@@ -279,7 +290,7 @@
                         <input type="text" class="form-control" id="email" name="email" placeholder="Email" required>
                     </div>
                     <div class="col-md-5 ml-4">
-                        <label class="col-form-label">Salary</label>
+                        <label class="col-form-label">Basic Salary</label>
                         <input type="number" class="form-control" id="Salary" name="Salary" placeholder="Salary" required>
                     </div>
                     <div class="col-md-5 ml-4">
@@ -313,9 +324,7 @@
                         </select>
                     </div>
                     <p id="error_msg"></p>  
-                </div>
-
-                <div class="row mt-3">
+                
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Leave</label>
                         <input type="text" class="form-control" id="attendance" name="attendance">
@@ -333,9 +342,27 @@
                         <input type="text" class="form-control" id="working_days" name="working_days" readonly>
                     </div>
                     
-                </div>
+               
+                   
+                    <div class="col-md-5 ml-4">
+                        <label class="col-form-label">HRA</label>
+                        <input type="number"  name="HRA" class="form-control" id="hra" value="0">
+                    </div>
+                    <div class="col-md-5 ml-4">
+                        <label class="col-form-label">Conveyance Allowance</label>
+                        <input type="number" name="Conveyance_Allowance" class="form-control" id="Conveyance_Allowance"value="0">
+                    </div>
+                    <div class="col-md-5 ml-4">
+                        <label class="col-form-label">Other Allowance</label>
+                        <input type="number"  name="Other_Allowance"  class="form-control" id="Other_Allowance" value="0" >
+                    </div>
+                    
 
-                <div class="row mt-3">
+
+
+
+
+
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Other Cuttings</label>
                         <input type="number" class="form-control" name="other_cuttings" id="other_cuttings" value="0" placeholder="Other Cuttings">
@@ -348,11 +375,9 @@
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Calculate Salary</label>
                         <input type="text" class="form-control" id="monthly_salary" name="monthly_salary" readonly>
-                        <button type="button" class="btn btn-outline-secondary w-50 text-light" onclick="calculateSalary();">Calculate Salary</button>
+                        <button type="button" class="btn btn-outline-secondary w-50 text-light mt-2" onclick="calculateSalary();">Calculate Salary</button>
                     </div>
-                </div>
-
-                <div class="row mt-3">
+               
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Description</label>
                         <textarea class="form-control" name="description" rows="3" ></textarea>
@@ -371,14 +396,17 @@
                 <div class="row justify-content-end">
                     <!-- <div class="col-md-4"></div> -->
                     <div class="col-md-2">
-                        <button name="submit" value="draft" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
-                            Save as Draft
-                        </button>
+                        <input type="submit" class="btn btn-outline-secondary w-100 text-light" name="Draft" value="Draft">
+                        <!-- <button name="submit" value="draft" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
+                         Draft
+                        </button> -->
                     </div>
                     <div class="col-md-2">
-                        <button name="submit"  value="save" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
+                        <input type="submit" class="btn btn-outline-secondary w-100 ml-1 text-light" name="Save" value="Save">
+
+                        <!-- <button name="submit"  value="save" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
                             Save 
-                        </button>
+                        </button> -->
                     </div>
             </div>
         </div>
@@ -1162,7 +1190,7 @@
                                                     <div class="col">
                                                         <label for="pfaccountnumber">PF Account Number</label>
                                                         <input type="text" class="form-control" id="pfaccountnumber" name="pfaccountnumber"
-                                                            style="background-color: #2f516f;color: white;" required>
+                                                            style="background-color: #2f516f;color: white;">
                                                        
                                                     </div>
                                                 </div>
@@ -1171,13 +1199,13 @@
                                                     <div class="col">
                                                         <label for="praccountnumber">PR Account Number</label>
                                                         <input type="text" class="form-control" id="praccountnumber" name="praccountnumber"
-                                                            style="background-color: #2f516f;color: white;" required>
+                                                            style="background-color: #2f516f;color: white;">
                                                         
                                                     </div>
                                                     <div class="col">
                                                         <label for="esinumber">ESI Number </label>
                                                         <input type="text" class="form-control" id="esinumber" name="esinumber"
-                                                            style="background-color: #2f516f;color: white;" required>
+                                                            style="background-color: #2f516f;color: white;">
                                                         
                                                     </div>
                                                 </div>

@@ -38,103 +38,7 @@
 
 
     
-    <script>
-        $(document).ready(function () {
-            $('#empl_id').select2({
-                placeholder: 'Search for an employee',
-                minimumInputLength: 0, // Minimum number of characters before searching
-                ajax: {
-                    url: "{% url 'listemployee_salary' %}",
-                    dataType: 'json',
-                    delay: 250,
-                    processResults: function (data) {
-                        return {
-                            results: $.map(data, function (item) {
-                                return {
-                                    id: item.employeeid,
-                                    text: item.title + ' ' + item.firstname + ' ' + item.lastname
-                                };
-                            })
-                        };
-                    },
-                    cache: true,
-                },
-            });
-        });
-
-        function fetchEmployeeDetails() {
-            console.log("Fetching employee details...");
-            var selectedEmployeeId = $('#empl_id').val();
-            console.log("Selected Employee ID:", selectedEmployeeId);
-    
-            $.ajax({
-                type: 'POST',
-                url: "{% url 'listemployee_salary' %}",
-                data: {
-                    id: selectedEmployeeId,
-                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                },
-                dataType: 'json',
-                success: function (data) {
-                    console.log("Employee details received:", data);
-                    updateFormFields(data); 
-                },
-                error: function (error) {
-                    console.error("Error fetching employee details:", error);
-                }
-            });
-        }
-
-    
-        function updateFormFields(data) {
-            console.log(data);
-            document.getElementById('email').value = data.email || '';
-            document.getElementById('eid').value = data.employeeno || '';
-            document.getElementById('joindate').value = data.joindate || '';
-            document.getElementById('Salary').value = data.amount || '';
-            document.getElementById('designation').value = data.designation || '';
-            
-            {% comment %} if (data.holidays_data) {
-            var holidaysList = data.holidays_data.map(function (holiday) {
-                return holiday.start_date + ' to ' + holiday.end_date;
-            });
-            updateFieldValue('holidays', holidaysList.join(', '));
-        }
-
-        if (data.attendance_data) {
-            var attendanceList = data.attendance_data.map(function (attendance) {
-                return attendance.date + ' (' + attendance.status + ')';
-            });
-            updateFieldValue('attendance', attendanceList.join(', '));
-        }
-
-        if (data.working_days) {
-            updateFieldValue('working_days', data.working_days);
-        } {% endcomment %}
-    }
-
-    function updateFieldValue(elementId, value) {
-        var element = document.getElementById(elementId);
-        if (element) {
-            element.value = value;
-        } else {
-            console.warn("Element with ID '" + elementId + "' not found in the DOM.");
-        }
-    }
-        function clearEmployeeDetails() {
-            updateFormFields({
-                email: '',
-                employeeno: '',
-                joindate: '',
-                amount: '',
-                designation: '',
-                holidays_data: [],
-                attendance_data: [],
-                working_days: '',
-               
-            });
-        }
-    </script>
+   
     <script>
         $(document).ready(function () {
             setCurrentDate();
@@ -183,7 +87,13 @@
             });
         }  
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        $(document).ready(function() {
+            $("#calculateButton").click(function() {
+                calculateSalary();
+            });
+        });
         function calculateSalary() { 
             var casualLeave = $('#casual_leave').val() || 0;
             var otherCuttings = $('#other_cuttings').val() || 0;
@@ -193,7 +103,9 @@
             var leave = $('#attendance').val()|| 0;
             var month = $('#month').val();  
             var year = $('#year').val();  
-            console.log('hii',salary)
+            var Other_Allowance = $('#Other_Allowance').val()|| 0;
+            var hra = $('#hra').val()|| 0;  
+            var Conveyance_Allowance = $('#Conveyance_Allowance').val()|| 0; 
             $.ajax({
                 type: 'POST',
                 url: "{% url 'calculate_salary' %}",
@@ -207,6 +119,9 @@
                     salary:salary,
                     month: month,
                     year: year,
+                    Other_Allowance:Other_Allowance,
+                    hra:hra,
+                    Conveyance_Allowance:Conveyance_Allowance,
                     csrfmiddlewaretoken: '{{ csrf_token }}',
                 },
                 dataType: 'json',
@@ -273,7 +188,7 @@
                         <input type="text" class="form-control" id="email" name="email" placeholder="Email" value="{{employee.employee_mail}}" required>
                     </div>
                     <div class="col-md-5 ml-4">
-                        <label class="col-form-label">Salary</label>
+                        <label class="col-form-label"> Basic Salary</label>
                         <input type="hidden" value="{{employee.id}}">
 
                         <input type="number" class="form-control" id="Salary" name="Salary" placeholder="Salary" value="{{employee.salary_amount}}" required>
@@ -310,9 +225,7 @@
                         </select>
                     </div>
                     <p id="error_msg"></p>  
-                </div>
-
-                <div class="row mt-3">
+               
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Leave</label>
                         <input type="text" class="form-control" id="attendance" name="attendance" value="{{ salary_detail.leave }}">
@@ -330,7 +243,27 @@
                         <input type="text" class="form-control" id="working_days" name="working_days" value="{{ salary_detail.total_working_days }}" readonly>
                     </div>
                     
+               
+                   
+                    <div class="col-md-5 ml-4">
+                        <label class="col-form-label">HRA</label>
+                        <input type="number" name="HRA" class="form-control" id="hra" value="{{ salary_detail.hra | default:0 }}">
+                    </div>
+                    <div class="col-md-5 ml-4">
+                        <label class="col-form-label">Conveyance Allowance</label>
+                        <input type="number" name="Conveyance_Allowance" class="form-control" id="Conveyance_Allowance" value="{{ salary_detail.conveyance_allowance | default:0 }}">
+                    </div>
+                    <div class="col-md-5 ml-4">
+                        <label class="col-form-label">Other Allowance</label>
+                        <input type="number" name="Other_Allowance"  class="form-control" id="Other_Allowance" value="{{ salary_detail.other_allowance | default:0}}">
+                    </div>
+                    
                 </div>
+
+
+
+
+
 
                 <div class="row mt-3">
                     <div class="col-md-5 ml-4">
@@ -345,11 +278,9 @@
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Calculate Salary</label>
                         <input type="text" class="form-control" id="monthly_salary" name="monthly_salary" value="{{ salary_detail.total_salary }}" readonly>
-                        <button type="button" class="btn btn-outline-secondary w-50 text-light" onclick="calculateSalary();">Calculate Salary</button>
+                        <button type="button" class="btn btn-outline-secondary w-50 text-light mt-3" id="calculateButton">Calculate Salary</button>
                     </div>
-                </div>
-
-                <div class="row mt-3">
+              
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Description</label>
                         <textarea class="form-control" name="description" rows="3" >{{ salary_detail.description }}</textarea>
@@ -368,14 +299,18 @@
                 <div class="row justify-content-end">
                     <!-- <div class="col-md-4"></div> -->
                     <div class="col-md-2">
-                        <button name="submit" value="draft" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
-                            Save as Draft
-                        </button>
+                        <input type="submit" class="btn btn-outline-secondary w-100 text-light" name="Draft" value="Draft">
+
+                        <!-- <button name="submit" value="draft" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
+                         Draft
+                        </button> -->
                     </div>
                     <div class="col-md-2">
-                        <button name="submit"  value="save" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
+                        <input type="submit" class="btn btn-outline-secondary w-100 ml-1 text-light" name="Save" value="Save">
+
+                        <!-- <button name="submit"  value="save" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
                             Save 
-                        </button>
+                        </button> -->
                     </div>
             </div>
         </div>

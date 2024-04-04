@@ -18486,37 +18486,39 @@ def filter_by_status_draft(request):
 def payroll_addsalarydetails(request):
     if 's_id' in request.session:
         s_id = request.session['s_id']
-        data = Fin_Login_Details.objects.get(id = s_id)
+        data = Fin_Login_Details.objects.get(id=s_id)
         if data.User_Type == "Company":
-            com = Fin_Company_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+            com = Fin_Company_Details.objects.get(Login_Id=s_id)
+            allmodules = Fin_Modules_List.objects.get(Login_Id=s_id, status='New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com)
-            company=com
-
+            company = com
         else:
-            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+            com = Fin_Staff_Details.objects.get(Login_Id=s_id)
+            allmodules = Fin_Modules_List.objects.get(company_id=com.company_id, status='New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-            company=com.company_id
+            company = com.company_id
 
         if request.method == 'POST':
-           
             employee_id = request.POST.get('employee')
-            selected_employee =Employee.objects.get(id=employee_id, company=company)        
-            # Validate and convert form data
+            selected_employee = Employee.objects.get(id=employee_id, company=company)
+
             casual_leave = int(request.POST.get('casual_leave', 0))
             other_cuttings = Decimal(request.POST.get('other_cuttings', 0))
             add_bonus = Decimal(request.POST.get('add_bonus', 0))
-            salary_str = request.POST.get('salary', '0')  # Provide a default string value
-            salary = Decimal(salary_str) if salary_str.replace('.', '', 1).isdigit() else Decimal(0)  # Ensure a valid decimal
-            leaves_str = request.POST.get('attendance', '0')  # Provide a default string value
-            leave = Decimal(leaves_str) if leaves_str.replace('.', '', 1).isdigit() else Decimal(0)  # Ensure a valid decimal
+            salary_str = request.POST.get('salary', '0')
+            salary = Decimal(salary_str) if salary_str.replace('.', '', 1).isdigit() else Decimal(0)
+            leaves_str = request.POST.get('attendance', '0')
+            leave = Decimal(leaves_str) if leaves_str.replace('.', '', 1).isdigit() else Decimal(0)
             holiday = int(request.POST.get('holidays', 0))
             total_working_days = int(request.POST.get('working_days', 0))
-            monthly_salary_str = request.POST.get('monthly_salary', '0')  # Provide a default string value
-            monthly_salary = Decimal(monthly_salary_str) if monthly_salary_str.replace('.', '', 1).isdigit() else Decimal(0)  # Ensure a valid decimal
-            month = int(request.POST.get('month'))
+            monthly_salary_str = request.POST.get('monthly_salary', '0')
+            monthly_salary = Decimal(monthly_salary_str) if monthly_salary_str.replace('.', '', 1).isdigit() else Decimal(0)
+            month = int(request.POST.get('month', 0))
             year = int(request.POST.get('year', 0))
+            hra = int(request.POST.get('HRA', 0))
+            other_allowance = int(request.POST.get('Other_Allowance', 0))
+            conveyance_allowance = int(request.POST.get('Conveyance_Allowance', 0))
+
             if selected_employee.salary_amount:
                 _, num_days = monthrange(year, month)
                 selected_employee_amount = Decimal(selected_employee.salary_amount)
@@ -18524,23 +18526,18 @@ def payroll_addsalarydetails(request):
                 leave_deduction = round((leave - casual_leave) * daily_wage)
             else:
                 leave_deduction = 0
-            print(f"Leave Deduction: {leave_deduction}")
 
             submit = request.POST.get('submit')
-            if submit == "save":
-                status = "save"
-            else:
-                status = "draft"
-
+            status = "save" if submit == "save" else "draft"
 
             salary_detail = Fin_SalaryDetails(
                 employee=selected_employee,
                 company=company,
                 salary_date=request.POST.get('salary_date'),
-                month=request.POST.get('month'),
-                year=request.POST.get('year'),
+                month=month,
+                year=year,
                 casual_leave=casual_leave,
-                leave = leave,
+                leave=leave,
                 holiday=holiday,
                 other_cuttings=other_cuttings,
                 add_bonus=add_bonus,
@@ -18549,18 +18546,20 @@ def payroll_addsalarydetails(request):
                 total_working_days=total_working_days,
                 leave_deduction=leave_deduction,
                 status=status,
-                
+                hra=hra,
+                other_allowance=other_allowance,
+                conveyance_allowance=conveyance_allowance,
             )
             salary_detail.save()
-            sal_history_obj = Fin_SalaryDetailsHistory()
-            sal_history_obj.company=company
-            sal_history_obj.login_details=data
-            sal_history_obj.salary_details=salary_detail
-            sal_history_obj.date=date.today()
-            sal_history_obj.action='Created'
 
-            
+            sal_history_obj = Fin_SalaryDetailsHistory()
+            sal_history_obj.company = company
+            sal_history_obj.login_details = data
+            sal_history_obj.salary_details = salary_detail
+            sal_history_obj.date = date.today()
+            sal_history_obj.action = 'Created'
             sal_history_obj.save()
+
             return redirect('Fin_salary_details')
 
         months = list(calendar.month_name)[1:]
@@ -18575,16 +18574,14 @@ def payroll_addsalarydetails(request):
             'com': com,
             'leave': 0,
             'holiday': 0,
-            'working_days': 0, 
-            'allmodules':allmodules,
-            'data':data,
-            'salary_details':salary_details,
-
+            'working_days': 0,
+            'allmodules': allmodules,
+            'data': data,
+            'salary_details': salary_details,
         }
         return render(request, 'company/salarydetails/Fin_payroll_addsalarydetails.html', context)
     else:
-      
-      return redirect('/')
+        return redirect('/')
 
 def listemployee_salary(request):
     if request.method == 'POST':
@@ -18596,17 +18593,31 @@ def listemployee_salary(request):
                 employee_id = request.POST.get('id').split(" ")[0]
                 try:
                     cust = Employee.objects.get(id=employee_id)
+                    sal_obj = Fin_SalaryDetails.objects.filter(employee=cust).last()
+
+
                     employee_mail = cust.employee_mail
                     employee_number = cust.employee_number
                     date_of_joining = cust.date_of_joining
                     salary_amount = cust.salary_amount
                     employee_designation = cust.employee_designation
+
+                    if sal_obj is not None:
+
+                       if  sal_obj.hra:   
+                        hra = sal_obj.hra
+                       else:
+                         hra = 0                  
+    
+
                     return JsonResponse({
                         'email': employee_mail,
                         'employeeno': employee_number,
                         'joindate': date_of_joining,
                         'amount': salary_amount,
-                        'designation': employee_designation, 
+                        'designation': employee_designation,
+                        'hra': hra,
+
                         
                         
 
@@ -18824,37 +18835,34 @@ def getDays(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400) 
 
 def calculate_salary(request):
-    if 's_id' in request.session:
-        s_id = request.session['s_id']
-        data = Fin_Login_Details.objects.get(id = s_id)
-        if data.User_Type == "Company":
-            com = Fin_Company_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com)
-            company=com
-           
-
-        else:
-            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
-            company=com.company_id
-
+   
         if request.method == 'POST':
-           
-            casual_leave = int(request.POST.get('casual_leave', 0))
+            salary = Decimal(request.POST.get('salary', 0))        
+            casual_leave = int(request.POST.get('casual_leave',0))
             other_cuttings = Decimal(request.POST.get('other_cuttings', 0))
             add_bonus = Decimal(request.POST.get('add_bonus', 0))
-            salary = Decimal(request.POST.get('salary', 0))
             leave = int(request.POST.get('attendance', 0))
             holiday = int(request.POST.get('holiday', 0))
             month = int(request.POST.get('month'))
             year = int(request.POST.get('year', 0))
+            
+            hra_str = request.POST.get('hra', '0')
+            hra_float = float(hra_str)
+            hra = int(round(hra_float)) 
+
+            Other_Allowance_str = request.POST.get('Other_Allowance')
+            Other_Allowance_float = float(Other_Allowance_str)
+            Other_Allowance = int(round(Other_Allowance_float)) 
+
+            Conveyance_Allowance_str = request.POST.get('Conveyance_Allowance')
+            Conveyance_Allowance_float = float(Conveyance_Allowance_str)
+            Conveyance_Allowance = int(round(Conveyance_Allowance_float)) 
+
             _, num_days = monthrange(year, month)
             wg = salary / num_days
             s1 = wg * leave
             leave_deduction = round((leave - casual_leave) * wg, 2)
-            monthly_salary = (salary - s1 - other_cuttings) + add_bonus
+            monthly_salary = (salary - s1 - other_cuttings) + (add_bonus + hra + Other_Allowance + Conveyance_Allowance)
             monthly_salary = int(monthly_salary)
             if leave == 0:
                 pass
@@ -18959,7 +18967,7 @@ def Fin_salary_overview(request, employee_id, salary_id):
             'comments':comments,
         }
 
-        return render(request, 'company/salarydetails/Fin_salary_overviewnew.html', context)
+        return render(request, 'company/salarydetails/Fin_overview.html', context)
     else:
       
       return redirect('/')
@@ -19216,7 +19224,11 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
             salary_detail.total_working_days = request.POST.get('working_days')
             salary_detail.description = request.POST.get('description')
             salary_detail.total_salary = request.POST.get('monthly_salary')
-            salary_detail.status = 'save' if request.POST.get('submit') == 'save' else 'draft'
+            salary_detail.hra = request.POST.get('HRA')
+            salary_detail.conveyance_allowance = request.POST.get('Conveyance_Allowance')
+            salary_detail.other_allowance = request.POST.get('Other_Allowance')
+
+            salary_detail.status = 'save' if request.POST.get('Save') == 'Save' else 'Draft'
 
             salary_detail.save()
             sal_history_obj = Fin_SalaryDetailsHistory()
@@ -19246,7 +19258,7 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
             'com': com,
             'leave': 0,
             'holiday': 0,
-            'working_days': 0,
+            'working_days': 0,           
             'month_name': calendar.month_name[salary_detail.month],
         }
 

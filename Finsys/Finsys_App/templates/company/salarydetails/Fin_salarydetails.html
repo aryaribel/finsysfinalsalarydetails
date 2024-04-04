@@ -103,7 +103,7 @@
     const ws = XLSX.utils.table_to_sheet(Table);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "Employee.xlsx");
+    XLSX.writeFile(wb, "salarydetails.xlsx");
   });
 
   jQuery(document).ready(function ($) {
