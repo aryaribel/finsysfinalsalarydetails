@@ -48,6 +48,8 @@ from django.http import Http404
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
+from django.views.decorators.csrf import csrf_exempt
+
 def Fin_index(request):
     return render(request,'Fin_index.html')
 
@@ -18506,7 +18508,6 @@ def payroll_addsalarydetails(request):
             other_cuttings = Decimal(request.POST.get('other_cuttings', 0))
             add_bonus = Decimal(request.POST.get('add_bonus', 0))
             salary_str = request.POST.get('salary', '0')
-            salary = Decimal(salary_str) if salary_str.replace('.', '', 1).isdigit() else Decimal(0)
             leaves_str = request.POST.get('attendance', '0')
             leave = Decimal(leaves_str) if leaves_str.replace('.', '', 1).isdigit() else Decimal(0)
             holiday = int(request.POST.get('holidays', 0))
@@ -18527,8 +18528,12 @@ def payroll_addsalarydetails(request):
             else:
                 leave_deduction = 0
 
-            submit = request.POST.get('submit')
-            status = "save" if submit == "save" else "draft"
+            # submit = request.POST.get('submit')
+            # status = "save" if submit == "save" else "draft"
+            if 'Save' in request.POST:
+                status='save' 
+            else:
+                status='draft'
 
             salary_detail = Fin_SalaryDetails(
                 employee=selected_employee,
@@ -18602,12 +18607,11 @@ def listemployee_salary(request):
                     salary_amount = cust.salary_amount
                     employee_designation = cust.employee_designation
 
-                    if sal_obj is not None:
+                    hra = 0  # Initialize hra with a default value
 
-                       if  sal_obj.hra:   
-                        hra = sal_obj.hra
-                       else:
-                         hra = 0                  
+                    if sal_obj is not None:
+                        if sal_obj.hra:   
+                            hra = sal_obj.hra              
     
 
                     return JsonResponse({
@@ -18646,6 +18650,129 @@ MONTH_NAMES = {
         }            
 
 
+# def AddEmployeeInSalaryPage(request):
+#     if 's_id' in request.session:
+#         s_id = request.session['s_id']
+#         data = Fin_Login_Details.objects.get(id = s_id)
+#         if data.User_Type == "Company":
+#             com = Fin_Company_Details.objects.get(Login_Id = s_id)
+#             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
+#             salary_details = Fin_SalaryDetails.objects.filter(company=com)
+#             company=com
+           
+
+#         else:
+#             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+#             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
+#             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+#             company=com.company_id
+
+#         try: 
+#             if request.method == 'POST':
+#                 title = request.POST['title']
+#                 first_name = request.POST['firstname'].replace(' ','')
+#                 last_name = request.POST['lastname'].replace(' ','')
+#                 alias = request.POST['alias']
+#                 employee_current_location = request.POST['location']
+#                 employee_mail = request.POST['email']
+            
+#                 mobile = request.POST['mobile']
+#                 employees = request.POST['employees']
+#                 date_of_joining = request.POST['joindate']
+#                 try:
+#                     img1 = request.FILES.get('image')
+#                 except:
+#                     img1 = 'default' 
+#                 salary_details = request.POST['salarydetails']
+#                 salary_effective_from = request.POST['effectivefrom']
+#                 pay_head = request.POST['payhead']
+#                 total_working_hours = request.POST['hours']
+#                 rate = request.POST['rate']
+#                 salary_amount = request.POST['amount']
+#                 employee_number = request.POST['employeeno']
+#                 employee_designation = request.POST['designation']
+#                 function = request.POST['function']
+#                 gender = request.POST['gender']
+#                 date_of_birth = request.POST['dateofbirth']
+#                 blood_group = request.POST['bloodgroup']
+#                 fathers_name_mothers_name = request.POST['fathersmothersname']
+#                 spouse_name = request.POST['spousename']
+                
+            
+#                 emergency_contact = request.POST['generalphone']
+#                 provide_bank_details = request.POST['bankdetails']
+#                 account_number = request.POST['acno']
+#                 ifsc = request.POST['ifsccode']
+#                 name_of_bank = request.POST['bankname']
+#                 branch_name = request.POST['branchname']
+#                 bank_transaction_type = request.POST['transactiontype']
+#                 pan_number = request.POST['pannumber']
+#                 universal_account_number = request.POST['universalaccountnumber']
+#                 pf_account_number = request.POST['pfaccountnumber']
+#                 pr_account_number = request.POST['praccountnumber']
+#                 esi_number = request.POST['esinumber']
+#                 tds_applicable = request.POST['tdsapp']
+#                 tds_type = request.POST['tdstype']
+#                 tds = request.POST['tds']
+#                 street = request.POST['street']
+#                 city = request.POST['city']
+#                 state = request.POST['state']
+#                 pincode = request.POST['pincode']
+#                 country = request.POST['country']
+#                 temporary_street = request.POST['tempstreet']
+#                 temporary_city = request.POST['tempcity']
+#                 temporary_state = request.POST['tempstate']
+#                 temporary_pincode = request.POST['temppincode']
+#                 temporary_country = request.POST['tempcountry'] 
+#                 aadhar_number = request.POST['adharnumber'] 
+#                 try:
+#                     file = request.FILES.get('file')
+#                 except:
+#                     file = '' 
+                
+#                 emppayroll = Employee(title=title,first_name=first_name,
+#                                             last_name=last_name,alias=alias,company=company,
+#                                             employee_current_location=employee_current_location,
+#                                             employee_mail=employee_mail,
+#                                             mobile=mobile,
+#                                             date_of_joining=date_of_joining,
+#                                             salary_details=salary_details,salary_effective_from=salary_effective_from,
+#                                             total_working_hours =total_working_hours,
+#                                             salary_amount=salary_amount,employee_number=employee_number,
+#                                             employee_designation=employee_designation,function=function,
+#                                             gender=gender,date_of_birth=date_of_birth,
+#                                             blood_group=blood_group,fathers_name_mothers_name=fathers_name_mothers_name,
+#                                             spouse_name= spouse_name,
+#                                             emergency_contact=emergency_contact,
+#                                             provide_bank_details=provide_bank_details,account_number=account_number,ifsc=ifsc,
+#                                             name_of_bank=name_of_bank, branch_name= branch_name,
+#                                             bank_transaction_type=bank_transaction_type,pan_number=pan_number,
+#                                             universal_account_number=universal_account_number,
+#                                             pf_account_number=pf_account_number,pr_account_number= pr_account_number,
+#                                             esi_number= esi_number,tds_applicable=tds_applicable,
+#                                             tds_type=tds_type,street=street,
+#                                             city=city,state=state,
+#                                             pincode=pincode,country=country,
+#                                             temporary_street=temporary_street,temporary_city=temporary_city,
+#                                             temporary_state=temporary_state,temporary_pincode=temporary_pincode,
+#                                             temporary_country=temporary_country,pay_head=pay_head,
+#                                             aadhar_number=aadhar_number
+#                                             )
+#                 if img1 != 'default':
+#                     emppayroll.upload_image = img1
+
+#                 if file !="":
+#                     emppayroll.upload_file=file
+
+#                 emppayroll.save()
+#                 print('done')
+#                 return redirect('payroll_addsalarydetails')
+#         except:    
+#             print('sorry')
+#             return redirect('payroll_addsalarydetails')
+# 
+
+
 def AddEmployeeInSalaryPage(request):
     if 's_id' in request.session:
         s_id = request.session['s_id']
@@ -18664,52 +18791,55 @@ def AddEmployeeInSalaryPage(request):
             company=com.company_id
 
         try: 
-            if request.method == 'POST':
-                title = request.POST['title']
+            if request.POST:
+                print('values inserted')
+                title = request.POST['Title']
                 first_name = request.POST['firstname'].replace(' ','')
                 last_name = request.POST['lastname'].replace(' ','')
                 alias = request.POST['alias']
-                employee_current_location = request.POST['location']
-                employee_mail = request.POST['email']
-            
-                mobile = request.POST['mobile']
-                employees = request.POST['employees']
                 date_of_joining = request.POST['joindate']
-                try:
-                    img1 = request.FILES.get('image')
-                except:
-                    img1 = 'default' 
-                salary_details = request.POST['salarydetails']
-                salary_effective_from = request.POST['effectivefrom']
-                pay_head = request.POST['payhead']
-                total_working_hours = request.POST['hours']
-                rate = request.POST['rate']
+                salarydate = request.POST['Salary_Date']
+                print(request.POST['amount'])
                 salary_amount = request.POST['amount']
+                if request.POST['amount'] == '':
+                    salary_amount = None
+                else:
+                    salary_amount = request.POST['amount']
+
+                amountperhour = request.POST['perhour']
+                if amountperhour == '' or amountperhour == '0':
+                    amountperhour = 0
+                else:
+                    amountperhour = request.POST['perhour']
+
+                workinghour = request.POST['workhour']
+                if workinghour == '' or workinghour == '0':
+                    workinghour = 0
+                else:
+                    workinghour = request.POST['workhour']
+
+                salary_type = request.POST['salary_type']
                 employee_number = request.POST['employeeno']
                 employee_designation = request.POST['designation']
-                function = request.POST['function']
+                employee_current_location = request.POST['location']   
                 gender = request.POST['gender']
+                image = request.FILES.get('Image', None)
+                if image:
+                    image = request.FILES['Image']
+                else:
+                    image = ''
                 date_of_birth = request.POST['dateofbirth']
                 blood_group = request.POST['bloodgroup']
+                mobile = request.POST['mobile']
+                emergency_contact = request.POST['generalphone']
+                employee_mail = request.POST['email'] 
                 fathers_name_mothers_name = request.POST['fathersmothersname']
                 spouse_name = request.POST['spousename']
-                
-            
-                emergency_contact = request.POST['generalphone']
-                provide_bank_details = request.POST['bankdetails']
-                account_number = request.POST['acno']
-                ifsc = request.POST['ifsccode']
-                name_of_bank = request.POST['bankname']
-                branch_name = request.POST['branchname']
-                bank_transaction_type = request.POST['transactiontype']
-                pan_number = request.POST['pannumber']
-                universal_account_number = request.POST['universalaccountnumber']
-                pf_account_number = request.POST['pfaccountnumber']
-                pr_account_number = request.POST['praccountnumber']
-                esi_number = request.POST['esinumber']
-                tds_applicable = request.POST['tdsapp']
-                tds_type = request.POST['tdstype']
-                tds = request.POST['tds']
+                file = request.FILES.get('File', None)
+                if file:
+                    file = request.FILES['File']
+                else:
+                    file=''
                 street = request.POST['street']
                 city = request.POST['city']
                 state = request.POST['state']
@@ -18720,52 +18850,130 @@ def AddEmployeeInSalaryPage(request):
                 temporary_state = request.POST['tempstate']
                 temporary_pincode = request.POST['temppincode']
                 temporary_country = request.POST['tempcountry'] 
+                provide_bank_details = request.POST['bankdetails']
+                account_number = request.POST['acno']
+                ifsc = request.POST['ifsccode']
+                name_of_bank = request.POST['bankname']
+                branch_name = request.POST['branchname']       
+                bank_transaction_type = request.POST['transactiontype']
+           
+                if request.POST['tds_applicable'] == 'Yes':
+                    tdsapplicable = request.POST['tds_applicable']
+                    tdstype = request.POST['TDS_Type']
+                    
+                    if tdstype == 'Amount':
+                        tdsvalue = request.POST['TDS_Amount']
+                    elif tdstype == 'Percentage':
+                        tdsvalue = request.POST['TDS_Percentage']
+                    else:
+                        tdsvalue = 0
+                elif request.POST['tds_applicable'] == 'No':
+                    tdsvalue = 0
+                    tdstype = ''
+                    tdsapplicable = request.POST['tds_applicable']
+                else:
+                    tdsvalue = 0
+                    tdstype = ''
+                    tdsapplicable = ''
+                incometax = request.POST['Income_Tax']
                 aadhar_number = request.POST['adharnumber'] 
-                try:
-                    file = request.FILES.get('file')
-                except:
-                    file = '' 
+                universal_account_number = request.POST['universalaccountnumber']
+                pan_number = request.POST['pannumber']
+                pf_account_number = request.POST['pfaccountnumber']
+                pr_account_number = request.POST['praccountnumber']
+
+                if date_of_birth == '':
+                    age = 2
+                else:
+                    dob2 = date.fromisoformat(date_of_birth)
+                    today = date.today()
+                    age = int(today.year - dob2.year - ((today.month, today.day) < (dob2.month, dob2.day)))    
+
+
+                if Employee.objects.filter(employee_mail=employee_mail,mobile = mobile,employee_number=employee_number,company_id = company.id).exists():
+                            messages.error(request,'user exist')
+                            return redirect('payroll_addsalarydetails')
+                        
+                elif Employee.objects.filter(mobile = mobile,company_id = company.id).exists():
+                    messages.error(request,'phone number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif Employee.objects.filter(emergency_contact = emergency_contact,company_id = company.id).exists():
+                    messages.error(request,'emergency phone number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif Employee.objects.filter(employee_mail=employee_mail,company_id = company.id).exists():
+                    messages.error(request,'email exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif Employee.objects.filter(employee_number=employee_number,company_id = company.id).exists():
+                    messages.error(request,'employee id exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif incometax != '' and Employee.objects.filter(income_tax_number = incometax,company_id = company.id).exists():
+                    messages.error(request,'Income Tax Number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif pf_account_number != '' and Employee.objects.filter(pf_account_number = pf_account_number,company_id = company.id).exists():
+                    messages.error(request,'PF account number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif aadhar_number != '' and Employee.objects.filter(aadhar_number = aadhar_number,company_id = company.id).exists():
+                    messages.error(request,'Aadhar number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif pan_number != '' and Employee.objects.filter(pan_number = pan_number,company_id = company.id).exists():
+                    messages.error(request,'PAN number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif universal_account_number != '' and Employee.objects.filter(universal_account_number = universal_account_number,company_id = company.id).exists():
+                    messages.error(request,'Universal account number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif pr_account_number != '' and Employee.objects.filter(pr_account_number = pr_account_number,company_id = company.id).exists():
+                    messages.error(request,'PR account number exist')
+                    return redirect('payroll_addsalarydetails')
+                
+                elif provide_bank_details.lower() == 'yes':
+                    if account_number != '' and Employee.objects.filter(account_number=account_number,company_id = company.id).exists():
+                        messages.error(request,'Bank account number already exist')
+                        return redirect('payroll_addsalarydetails')
+                        
                 
                 emppayroll = Employee(title=title,first_name=first_name,
-                                            last_name=last_name,alias=alias,company=company,
-                                            employee_current_location=employee_current_location,
-                                            employee_mail=employee_mail,
-                                            mobile=mobile,
-                                            date_of_joining=date_of_joining,
-                                            salary_details=salary_details,salary_effective_from=salary_effective_from,
-                                            total_working_hours =total_working_hours,
-                                            salary_amount=salary_amount,employee_number=employee_number,
-                                            employee_designation=employee_designation,function=function,
-                                            gender=gender,date_of_birth=date_of_birth,
-                                            blood_group=blood_group,fathers_name_mothers_name=fathers_name_mothers_name,
-                                            spouse_name= spouse_name,
-                                            emergency_contact=emergency_contact,
-                                            provide_bank_details=provide_bank_details,account_number=account_number,ifsc=ifsc,
-                                            name_of_bank=name_of_bank, branch_name= branch_name,
-                                            bank_transaction_type=bank_transaction_type,pan_number=pan_number,
-                                            universal_account_number=universal_account_number,
-                                            pf_account_number=pf_account_number,pr_account_number= pr_account_number,
-                                            esi_number= esi_number,tds_applicable=tds_applicable,
-                                            tds_type=tds_type,street=street,
-                                            city=city,state=state,
-                                            pincode=pincode,country=country,
-                                            temporary_street=temporary_street,temporary_city=temporary_city,
-                                            temporary_state=temporary_state,temporary_pincode=temporary_pincode,
-                                            temporary_country=temporary_country,pay_head=pay_head,
-                                            aadhar_number=aadhar_number
-                                            )
-                if img1 != 'default':
-                    emppayroll.upload_image = img1
-
-                if file !="":
-                    emppayroll.upload_file=file
-
+                                                    last_name=last_name,alias=alias,company=company,
+                                                    employee_current_location=employee_current_location,
+                                                    employee_mail=employee_mail,
+                                                    mobile=mobile,
+                                                    date_of_joining=date_of_joining,
+                                                    salary_effective_from=salarydate,                                                  
+                                                    salary_amount=salary_amount,amount_per_hour=amountperhour,total_working_hours = workinghour,employee_number=employee_number,
+                                                    employee_designation=employee_designation,employee_salary_type =salary_type,
+                                                    gender=gender,date_of_birth=date_of_birth,
+                                                    blood_group=blood_group,fathers_name_mothers_name=fathers_name_mothers_name,
+                                                    spouse_name= spouse_name,upload_image=image,upload_file = file,
+                                                    emergency_contact=emergency_contact,
+                                                    provide_bank_details=provide_bank_details,account_number=account_number,ifsc=ifsc,
+                                                    name_of_bank=name_of_bank, branch_name= branch_name,
+                                                    bank_transaction_type=bank_transaction_type,pan_number=pan_number,
+                                                    universal_account_number=universal_account_number,
+                                                    pf_account_number=pf_account_number,pr_account_number= pr_account_number,                                               
+                                                    street=street,income_tax_number = incometax,
+                                                    city=city,state=state,
+                                                    pincode=pincode,country=country,
+                                                    temporary_street=temporary_street,temporary_city=temporary_city,
+                                                    temporary_state=temporary_state,temporary_pincode=temporary_pincode,
+                                                    temporary_country=temporary_country,age = age,
+                                                    aadhar_number=aadhar_number, tds_applicable = tdsapplicable, tds_type = tdstype,percentage_amount = tdsvalue
+                                                    )
+                       
                 emppayroll.save()
                 print('done')
                 return redirect('payroll_addsalarydetails')
-        except:    
-            print('sorry')
-            return redirect('payroll_addsalarydetails') 
+        except:
+             print('sorry')
+             return redirect('payroll_addsalarydetails')    
+                        
 
 def getDays(request):
      if 's_id' in request.session:
@@ -19228,7 +19436,6 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
             salary_detail.conveyance_allowance = request.POST.get('Conveyance_Allowance')
             salary_detail.other_allowance = request.POST.get('Other_Allowance')
 
-            salary_detail.status = 'save' if request.POST.get('Save') == 'Save' else 'Draft'
 
             salary_detail.save()
             sal_history_obj = Fin_SalaryDetailsHistory()
@@ -19281,4 +19488,21 @@ def Fin_SalaryHistory(request,id):
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             return render(request,'company/salarydetails/Fin_salary_History.html',{'allmodules':allmodules,'com':com,'data':data,'history':his, 'employee':cust})
     else:
-       return redirect('/')        
+       return redirect('/')   
+
+@csrf_exempt
+def check_employee_id(request):
+    if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        try:
+            employee_id = request.POST.get('employeeId')
+            # Check if the employee ID already exists
+            if Employee.objects.filter(employee_number=employee_id).exists():
+                return JsonResponse({'exists': True})
+            else:
+                return JsonResponse({'exists': False})
+        except Exception as e:
+            print('Error:', e)
+            return JsonResponse({'error': 'An error occurred'})
+
+    # If the request is not AJAX or not POST, return error
+    return JsonResponse({'error': 'Invalid request'})

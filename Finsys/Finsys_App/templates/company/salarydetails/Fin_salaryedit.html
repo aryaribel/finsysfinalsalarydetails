@@ -187,12 +187,7 @@
                         <label class="col-form-label">Email</label>
                         <input type="text" class="form-control" id="email" name="email" placeholder="Email" value="{{employee.employee_mail}}" required>
                     </div>
-                    <div class="col-md-5 ml-4">
-                        <label class="col-form-label"> Basic Salary</label>
-                        <input type="hidden" value="{{employee.id}}">
-
-                        <input type="number" class="form-control" id="Salary" name="Salary" placeholder="Salary" value="{{employee.salary_amount}}" required>
-                    </div>
+                  
                     <div class="col-md-5 ml-4">
                         <label class="col-form-label">Join Date</label>
                         <input type="date" class="form-control" id="joindate" name="joindate" value="{{employee.date_of_joining|date:'Y-m-d'}}" required><br>
@@ -242,7 +237,12 @@
                         <label class="col-form-label">Working Day</label>
                         <input type="text" class="form-control" id="working_days" name="working_days" value="{{ salary_detail.total_working_days }}" readonly>
                     </div>
-                    
+                    <div class="col-md-5 ml-4">
+                        <label class="col-form-label"> Basic Salary</label>
+                        <input type="hidden" value="{{employee.id}}">
+
+                        <input type="number" class="form-control" id="Salary" name="Salary" placeholder="Salary" value="{{employee.salary_amount}}" required>
+                    </div>
                
                    
                     <div class="col-md-5 ml-4">
@@ -276,7 +276,7 @@
                     </div>
                     
                     <div class="col-md-5 ml-4">
-                        <label class="col-form-label">Calculate Salary</label>
+                        <label class="col-form-label">Salary</label>
                         <input type="text" class="form-control" id="monthly_salary" name="monthly_salary" value="{{ salary_detail.total_salary }}" readonly>
                         <button type="button" class="btn btn-outline-secondary w-50 text-light mt-3" id="calculateButton">Calculate Salary</button>
                     </div>
@@ -299,14 +299,14 @@
                 <div class="row justify-content-end">
                     <!-- <div class="col-md-4"></div> -->
                     <div class="col-md-2">
-                        <input type="submit" class="btn btn-outline-secondary w-100 text-light" name="Draft" value="Draft">
+                        <!-- <input type="submit" class="btn btn-outline-secondary w-100 text-light" name="Draft" value="Draft"> -->
 
                         <!-- <button name="submit" value="draft" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
                          Draft
                         </button> -->
                     </div>
-                    <div class="col-md-2">
-                        <input type="submit" class="btn btn-outline-secondary w-100 ml-1 text-light" name="Save" value="Save">
+                    <div class="col-md-4">
+                        <input type="submit" class="btn btn-outline-secondary w-100 ml-1 text-light"  value="Save">
 
                         <!-- <button name="submit"  value="save" class="btn btn-outline-info rounded-pill text-grey w-100 mt-3 mb-3" type="submit">
                             Save 
