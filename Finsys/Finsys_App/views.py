@@ -19024,6 +19024,7 @@ def getDays(request):
                     status='Leave'
                 ).count()
                 holidays_count = Holiday.objects.filter(company=company,start_date__range=(start_date, end_date)).count()
+
                 print(holidays_count,leave_count)
                 _, num_days = calendar.monthrange(year, month)
                 working_days = num_days - holidays_count
@@ -19506,3 +19507,107 @@ def check_employee_id(request):
 
     # If the request is not AJAX or not POST, return error
     return JsonResponse({'error': 'Invalid request'})
+
+
+
+def emp_dropdown(request):                                                                 #new by tinto mt (item)
+    sid = request.session['s_id']
+    login = Fin_Login_Details.objects.get(id=sid)
+    if login.User_Type == 'Company':
+            com = Fin_Company_Details.objects.get(Login_Id = sid)
+            options = {}
+            option_objects = Employee.objects.filter(Q(employee_status='Active')|Q(employee_status='active'),company=com)
+            print(1111)
+            for option in option_objects:
+                title=option.title
+                first_name=option.first_name
+                last_name=option.last_name
+                options[option.id] = [title,first_name,last_name,f"{title}"]
+            return JsonResponse(options)
+    elif login.User_Type == 'Staff':
+            staf = Fin_Staff_Details.objects.get(Login_Id = sid)
+            options = {}
+            option_objects = Employee.objects.filter(Q(employee_status='Active')|Q(employee_status='active'),company=staf.company_id)
+            for option in option_objects:
+                title=option.title
+                first_name=option.first_name
+                last_name=option.last_name
+                options[option.id] = [title,first_name,last_name,f"{title}"]
+            return JsonResponse(options)
+
+# def EditEmployeeDetails(request, employee_id, salary_id):
+#     if 's_id' in request.session:
+#         s_id = request.session['s_id']
+#         data = Fin_Login_Details.objects.get(id=s_id)
+#         if data.User_Type == "Company":
+#             com = Fin_Company_Details.objects.get(Login_Id=s_id)
+#             allmodules = Fin_Modules_List.objects.get(Login_Id=s_id, status='New')
+#             company = com
+
+#         else:
+#             com = Fin_Staff_Details.objects.get(Login_Id=s_id)
+#             allmodules = Fin_Modules_List.objects.get(company_id=com.company_id, status='New')
+#             company = com.company_id
+
+#         try:
+#             if request.POST:
+#                 print('values inserted')
+#                 # Fetch the employee instance to be edited
+#                 employee = Employee.objects.get(id=employee_id)
+
+#                 # Update employee details based on form data
+#                 employee.title = request.POST['Title']
+#                 employee.first_name = request.POST['firstname'].replace(' ', '')
+#                 employee.last_name = request.POST['lastname'].replace(' ', '')
+#                 employee.alias = request.POST['alias']
+#                 employee.date_of_joining = request.POST['joindate']
+#                 employee.salary_effective_from = request.POST['Salary_Date']
+#                 employee.salary_amount = request.POST.get('amount') or None
+#                 employee.amount_per_hour = request.POST.get('perhour') or 0
+#                 employee.total_working_hours = request.POST.get('workhour') or 0
+#                 employee.employee_designation = request.POST['designation']
+#                 employee.employee_current_location = request.POST['location']
+#                 employee.gender = request.POST['gender']
+#                 employee.upload_image = request.FILES.get('Image', '') or ''
+#                 employee.date_of_birth = request.POST['dateofbirth']
+#                 employee.blood_group = request.POST['bloodgroup']
+#                 employee.mobile = request.POST['mobile']
+#                 employee.emergency_contact = request.POST['generalphone']
+#                 employee.employee_mail = request.POST['email']
+#                 employee.fathers_name_mothers_name = request.POST['fathersmothersname']
+#                 employee.spouse_name = request.POST['spousename']
+#                 employee.upload_file = request.FILES.get('File', '') or ''
+#                 employee.street = request.POST['street']
+#                 employee.city = request.POST['city']
+#                 employee.state = request.POST['state']
+#                 employee.pincode = request.POST['pincode']
+#                 employee.country = request.POST['country']
+#                 employee.temporary_street = request.POST['tempstreet']
+#                 employee.temporary_city = request.POST['tempcity']
+#                 employee.temporary_state = request.POST['tempstate']
+#                 employee.temporary_pincode = request.POST['temppincode']
+#                 employee.temporary_country = request.POST['tempcountry']
+#                 employee.provide_bank_details = request.POST['bankdetails']
+#                 employee.account_number = request.POST['acno']
+#                 employee.ifsc = request.POST['ifsccode']
+#                 employee.name_of_bank = request.POST['bankname']
+#                 employee.branch_name = request.POST['branchname']
+#                 employee.bank_transaction_type = request.POST['transactiontype']
+#                 employee.age = int(request.POST['age']) if request.POST['age'] else 2
+#                 employee.tds_applicable = request.POST['tds_applicable']
+#                 employee.tds_type = request.POST['TDS_Type']
+#                 employee.percentage_amount = request.POST['TDS_Amount'] if request.POST['TDS_Type'] == 'Amount' else request.POST['TDS_Percentage']
+#                 employee.income_tax_number = request.POST['Income_Tax']
+#                 employee.aadhar_number = request.POST['adharnumber']
+#                 employee.universal_account_number = request.POST['universalaccountnumber']
+#                 employee.pan_number = request.POST['pannumber']
+#                 employee.pf_account_number = request.POST['pfaccountnumber']
+#                 employee.pr_account_number = request.POST['praccountnumber']
+
+#                 employee.save()
+#                 print('done')
+#                 return redirect('Fin_salaryedit')
+#         except Exception as e:
+#             print('Error:', e)
+#             return redirect('Fin_salaryedit')
+
