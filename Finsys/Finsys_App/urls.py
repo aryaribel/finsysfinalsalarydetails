@@ -588,7 +588,13 @@ urlpatterns = [
     path('Fin_salaryedit/<int:employee_id>/<int:salary_id>/', views.Fin_salaryedit, name ='Fin_salaryedit'),
     path('Fin_SalaryHistory/<int:id>',views.Fin_SalaryHistory, name='Fin_SalaryHistory'),
     path('check_employee_id/', views.check_employee_id, name='check_employee_id'),
-    path('emp_dropdown', views.emp_dropdown, name='emp_dropdown'),
+    path('emp_dropdown_active_not', views.emp_dropdown_active_not, name='emp_dropdown_active_not'),
+   
+    path('Employee-Edit/<int:employee_id>/<int:sal_id>/', views.employee_edit, name ='employee_edit'),
+    path('Edit_getDays',views.Edit_getDays,name='Edit_getDays'),
+    path('Fin_salarysave/<int:employee_id>/<int:salary_id>/', views.Fin_salarysave, name ='Fin_salarysave'),
+
+
     # path('EditEmployeeDetails/<int:employee_id>/<int:salary_id>/',views.EditEmployeeDetails, name='EditEmployeeDetails'),
     
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),

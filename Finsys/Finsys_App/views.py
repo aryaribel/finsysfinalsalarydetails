@@ -4316,6 +4316,7 @@ def employee_list(request):
 
     return render(request,'company/Employee_List.html',{'employee':employee,'allmodules':allmodules,'com':com,'data':loginn})
 
+
 def employee_create_page(request):
     sid = request.session['s_id']
     loginn = Fin_Login_Details.objects.get(id=sid)
@@ -5093,6 +5094,7 @@ def Employee_Profile_PDF(request,pk):
     return render(request,'company/Employee_Profile_PDF.html',{'employ':employ})
         
 def employee_blood_group(request):
+
     if request.method == 'POST':
         bloodGroup = request.POST.get('bloodGroup', '').upper()
         sid = request.session.get('s_id')
@@ -18340,6 +18342,7 @@ def Fin_salary_details(request):
     if 's_id' in request.session:
         s_id = request.session['s_id']
         data = Fin_Login_Details.objects.get(id = s_id)
+
         if data.User_Type == "Company":
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
@@ -18349,15 +18352,22 @@ def Fin_salary_details(request):
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
             allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
             salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
+
         for salary_detail in salary_details:
                 try:
                     salary_detail.month = int(salary_detail.month)
                     salary_detail.month_name = calendar.month_name[salary_detail.month]
+
                 except (ValueError, IndexError):
                     salary_detail.month_name = 'Invalid Month'
+
                 salary_detail.save()  
+                 
               
-        return render(request,'company/salarydetails/Fin_salarydetails.html',{'allmodules':allmodules,'com':com,'data':data,'salary_details':salary_details})
+        return render(request,'company/salarydetails/Fin_salarydetails.html',{'allmodules':allmodules,
+                                                                              'com':com,'data':data,
+                                                                              'salary_details':salary_details
+                                                                              })
     else:
        return redirect('/')
 
@@ -18569,7 +18579,7 @@ def payroll_addsalarydetails(request):
 
         months = list(calendar.month_name)[1:]
         years = range(2000, 2030)
-        employees = Employee.objects.filter(company=company)
+        employees = Employee.objects.filter(company=company,employee_status='Active')
         holiday = Holiday.objects.filter(company=company)
 
         context = {
@@ -18959,7 +18969,7 @@ def AddEmployeeInSalaryPage(request):
                                                     universal_account_number=universal_account_number,
                                                     pf_account_number=pf_account_number,pr_account_number= pr_account_number,                                               
                                                     street=street,income_tax_number = incometax,
-                                                    city=city,state=state,
+                                                    city=city,state=state,employee_status='Active',
                                                     pincode=pincode,country=country,
                                                     temporary_street=temporary_street,temporary_city=temporary_city,
                                                     temporary_state=temporary_state,temporary_pincode=temporary_pincode,
@@ -18979,37 +18989,30 @@ def getDays(request):
      if 's_id' in request.session:
         s_id = request.session['s_id']
         data = Fin_Login_Details.objects.get(id = s_id)
+
         if data.User_Type == "Company":
             com = Fin_Company_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(Login_Id = s_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com)
             company=com
-           
-
+        
         else:
             com = Fin_Staff_Details.objects.get(Login_Id = s_id)
-            allmodules = Fin_Modules_List.objects.get(company_id = com.company_id,status = 'New')
-            salary_details = Fin_SalaryDetails.objects.filter(company=com.company_id)
             company=com.company_id
 
-        if request.method == 'POST':
-            if 's_id' in request.session:
-                s_id = request.session.get('s_id')
-            else:
-                return JsonResponse({'error': 'Session UID not found'}, status=401)
-
-           
+        if request.method == 'POST':   
             employee_id = request.POST.get('id')
             empid = Employee.objects.get(id=employee_id)
             month = request.POST.get('month')
             year = request.POST.get('year')
             month = int(month)
             year = int(year)
+
             try:
                 result = Fin_SalaryDetails.objects.get(employee=empid, month=month, year=year)
                 if result:
                     return JsonResponse({'error': 'Salary Already Executed.'}, status=404)
+                
             except Fin_SalaryDetails.DoesNotExist:
+
                 start_date = datetime(year, month, 1)
                 if month == 12:
                     end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
@@ -19017,15 +19020,31 @@ def getDays(request):
                     end_date = datetime(year, month % 12 + 1, 1) - timedelta(days=1)
                 start_date = start_date.strftime("%Y-%m-%d")
                 end_date = end_date.strftime("%Y-%m-%d")
+
                 leave_count = Fin_Attendances.objects.filter(
                     employee=empid,
                     company=company,
                     start_date__range=(start_date, end_date),
                     status='Leave'
-                ).count()
+                )
+
+
+                # Clculating leave days ----------------
+                count_leave = 0
+
+                for i in leave_count:
+                    x = i.end_date - i.start_date
+                    leave_days = x.days
+                    if leave_days == 0:
+                        leave_days = 1
+                    else:
+                        leave_days = leave_days + 1
+                    count_leave = int(count_leave + leave_days)
+
+
+
                 holidays_count = Holiday.objects.filter(company=company,start_date__range=(start_date, end_date)).count()
 
-                print(holidays_count,leave_count)
                 _, num_days = calendar.monthrange(year, month)
                 working_days = num_days - holidays_count
                 
@@ -19033,7 +19052,7 @@ def getDays(request):
                     return JsonResponse({
                         'month': MONTH_NAMES.get(month, ''),
                         'holiday': holidays_count,
-                        'leave': leave_count,   
+                        'leave': count_leave,   
                         'working_days' : working_days, 
                                 
                     }, safe=False)
@@ -19041,7 +19060,7 @@ def getDays(request):
                 except Employee.DoesNotExist:
                     return JsonResponse({'error': 'Selected employee not found.'}, status=404)
 
-        return JsonResponse({'error': 'Invalid request method'}, status=400) 
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 def calculate_salary(request):
    
@@ -19415,12 +19434,9 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
         
         salary_detail.month = int(salary_detail.month)
         salary_detail.month_name = calendar.month_name[salary_detail.month]
-        # print("Employee ID:", employee.employeeid)
-        # print("Salary ID:", salary_id) 
-        # print("Salary Month:", salary_detail.month)
-        
+       
 
-        if request.method == 'POST':
+        if request.POST:
             salary_detail=Fin_SalaryDetails.objects.get(id=salary_id)
             salary_detail.salary_date = request.POST.get('salary_date')
             salary_detail.month = request.POST.get('month')
@@ -19436,18 +19452,18 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
             salary_detail.hra = request.POST.get('HRA')
             salary_detail.conveyance_allowance = request.POST.get('Conveyance_Allowance')
             salary_detail.other_allowance = request.POST.get('Other_Allowance')
-
-
             salary_detail.save()
+
+
+           
             sal_history_obj = Fin_SalaryDetailsHistory()
             sal_history_obj.company=company
             sal_history_obj.login_details=data
             sal_history_obj.salary_details=salary_detail
             sal_history_obj.date=date.today()
             sal_history_obj.action='Edited'
-
-            
             sal_history_obj.save()
+
             return redirect('Fin_salary_overview', employee_id=salary_detail.employee.id, salary_id=salary_detail.id)
         
         employees = Employee.objects.filter(company=company)
@@ -19455,7 +19471,37 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
         years = range(2000, 2030)
         years = range(2000, 2030)
         holiday =  Holiday.objects.filter(company=company)
-        leave = Fin_Attendances.objects.filter(company=company)
+        result = Fin_SalaryDetails.objects.get(id=salary_id,employee=employee_id)
+        month = int(result.month)
+        year = int(result.year)
+
+        start_date = datetime(year, month, 1)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
+        else:
+            end_date = datetime(year, month % 12 + 1, 1) - timedelta(days=1)
+            start_date = start_date.strftime("%Y-%m-%d")
+            end_date = end_date.strftime("%Y-%m-%d")
+
+        leave_count = Fin_Attendances.objects.filter( employee=employee_id,
+                    company=company,
+                    start_date__range=(start_date, end_date),
+                    status='Leave')
+
+         # Clculating leave days ----------------
+        count_leave = 0
+
+        for i in leave_count:
+            x = i.end_date - i.start_date
+            leave_days = x.days
+            if leave_days == 0:
+                leave_days = 1
+            else:
+                leave_days = leave_days + 1
+            count_leave = int(count_leave + leave_days)
+        result.leave=count_leave
+        result.save()
+        print(result)
 
         context = {
             'salary_detail': salary_detail,
@@ -19468,6 +19514,7 @@ def Fin_salaryedit(request, employee_id,salary_id=None):
             'holiday': 0,
             'working_days': 0,           
             'month_name': calendar.month_name[salary_detail.month],
+            
         }
 
         return render(request, 'company/salarydetails/Fin_salaryedit.html', context)
@@ -19510,13 +19557,13 @@ def check_employee_id(request):
 
 
 
-def emp_dropdown(request):                                                                 #new by tinto mt (item)
+def emp_dropdown_active_not(request):                                                                 #new by tinto mt (item)
     sid = request.session['s_id']
     login = Fin_Login_Details.objects.get(id=sid)
     if login.User_Type == 'Company':
             com = Fin_Company_Details.objects.get(Login_Id = sid)
             options = {}
-            option_objects = Employee.objects.filter(Q(employee_status='Active')|Q(employee_status='active'),company=com)
+            option_objects = Employee.objects.filter(company=com,employee_status='Active')
             print(1111)
             for option in option_objects:
                 title=option.title
@@ -19527,7 +19574,7 @@ def emp_dropdown(request):                                                      
     elif login.User_Type == 'Staff':
             staf = Fin_Staff_Details.objects.get(Login_Id = sid)
             options = {}
-            option_objects = Employee.objects.filter(Q(employee_status='Active')|Q(employee_status='active'),company=staf.company_id)
+            option_objects = Employee.objects.filter(company=staf.company_id,employee_status='Active')
             for option in option_objects:
                 title=option.title
                 first_name=option.first_name
@@ -19535,79 +19582,184 @@ def emp_dropdown(request):                                                      
                 options[option.id] = [title,first_name,last_name,f"{title}"]
             return JsonResponse(options)
 
-# def EditEmployeeDetails(request, employee_id, salary_id):
-#     if 's_id' in request.session:
-#         s_id = request.session['s_id']
-#         data = Fin_Login_Details.objects.get(id=s_id)
-#         if data.User_Type == "Company":
-#             com = Fin_Company_Details.objects.get(Login_Id=s_id)
-#             allmodules = Fin_Modules_List.objects.get(Login_Id=s_id, status='New')
-#             company = com
 
-#         else:
-#             com = Fin_Staff_Details.objects.get(Login_Id=s_id)
-#             allmodules = Fin_Modules_List.objects.get(company_id=com.company_id, status='New')
-#             company = com.company_id
 
-#         try:
-#             if request.POST:
-#                 print('values inserted')
-#                 # Fetch the employee instance to be edited
-#                 employee = Employee.objects.get(id=employee_id)
 
-#                 # Update employee details based on form data
-#                 employee.title = request.POST['Title']
-#                 employee.first_name = request.POST['firstname'].replace(' ', '')
-#                 employee.last_name = request.POST['lastname'].replace(' ', '')
-#                 employee.alias = request.POST['alias']
-#                 employee.date_of_joining = request.POST['joindate']
-#                 employee.salary_effective_from = request.POST['Salary_Date']
-#                 employee.salary_amount = request.POST.get('amount') or None
-#                 employee.amount_per_hour = request.POST.get('perhour') or 0
-#                 employee.total_working_hours = request.POST.get('workhour') or 0
-#                 employee.employee_designation = request.POST['designation']
-#                 employee.employee_current_location = request.POST['location']
-#                 employee.gender = request.POST['gender']
-#                 employee.upload_image = request.FILES.get('Image', '') or ''
-#                 employee.date_of_birth = request.POST['dateofbirth']
-#                 employee.blood_group = request.POST['bloodgroup']
-#                 employee.mobile = request.POST['mobile']
-#                 employee.emergency_contact = request.POST['generalphone']
-#                 employee.employee_mail = request.POST['email']
-#                 employee.fathers_name_mothers_name = request.POST['fathersmothersname']
-#                 employee.spouse_name = request.POST['spousename']
-#                 employee.upload_file = request.FILES.get('File', '') or ''
-#                 employee.street = request.POST['street']
-#                 employee.city = request.POST['city']
-#                 employee.state = request.POST['state']
-#                 employee.pincode = request.POST['pincode']
-#                 employee.country = request.POST['country']
-#                 employee.temporary_street = request.POST['tempstreet']
-#                 employee.temporary_city = request.POST['tempcity']
-#                 employee.temporary_state = request.POST['tempstate']
-#                 employee.temporary_pincode = request.POST['temppincode']
-#                 employee.temporary_country = request.POST['tempcountry']
-#                 employee.provide_bank_details = request.POST['bankdetails']
-#                 employee.account_number = request.POST['acno']
-#                 employee.ifsc = request.POST['ifsccode']
-#                 employee.name_of_bank = request.POST['bankname']
-#                 employee.branch_name = request.POST['branchname']
-#                 employee.bank_transaction_type = request.POST['transactiontype']
-#                 employee.age = int(request.POST['age']) if request.POST['age'] else 2
-#                 employee.tds_applicable = request.POST['tds_applicable']
-#                 employee.tds_type = request.POST['TDS_Type']
-#                 employee.percentage_amount = request.POST['TDS_Amount'] if request.POST['TDS_Type'] == 'Amount' else request.POST['TDS_Percentage']
-#                 employee.income_tax_number = request.POST['Income_Tax']
-#                 employee.aadhar_number = request.POST['adharnumber']
-#                 employee.universal_account_number = request.POST['universalaccountnumber']
-#                 employee.pan_number = request.POST['pannumber']
-#                 employee.pf_account_number = request.POST['pfaccountnumber']
-#                 employee.pr_account_number = request.POST['praccountnumber']
+def employee_edit(request, employee_id,sal_id):
+    if request.method == 'POST':
 
-#                 employee.save()
-#                 print('done')
-#                 return redirect('Fin_salaryedit')
-#         except Exception as e:
-#             print('Error:', e)
-#             return redirect('Fin_salaryedit')
+        try:
 
+            emp_obj = Employee.objects.get(id=employee_id)
+
+            emp_obj.title = request.POST['Title']
+            emp_obj.first_name = request.POST['firstname'].capitalize()
+            emp_obj.last_name = request.POST['lastname'].capitalize()
+            emp_obj.alias = request.POST['alias']
+            emp_obj.date_of_joining= request.POST['joindate']
+            emp_obj.salary_effective_from = request.POST['Salary_Date']
+            emp_obj.salary_amount = request.POST['amount']
+            emp_obj.employee_salary_type = request.POST['salary_type']
+
+            image = request.FILES.get('Image', None)
+            if image:
+                emp_obj.upload_image = request.FILES['Image']
+            else:
+                emp_obj.upload_image = emp_obj.upload_image
+
+            emp_obj.date_of_birth = request.POST['dateofbirth']
+            emp_obj.blood_group = request.POST['bloodgroup']
+            emp_obj.gender = request.POST['gender']
+
+            dob = request.POST['dateofbirth']
+
+            if dob == '':
+                age = 2
+            else:
+                dob2 = date.fromisoformat(dob)
+                today = date.today()
+                emp_obj.age = int(today.year - dob2.year - ((today.month, today.day) < (dob2.month, dob2.day)))
+
+            if request.POST['amount'] == '':
+                emp_obj.salary_amount = None
+            else:
+                 emp_obj.salary_amount = request.POST['amount']
+
+            emp_obj.amount_per_hour = request.POST.get('perhour') or 0
+            emp_obj.total_working_hours = request.POST.get('workhour') or 0
+            emp_obj.employee_designation = request.POST['designation']
+            emp_obj.employee_current_location = request.POST['location']
+            emp_obj.gender = request.POST['gender']
+            emp_obj.upload_image = request.FILES.get('Image', '') or ''
+            emp_obj.date_of_birth = request.POST['dateofbirth']
+            emp_obj.blood_group = request.POST['bloodgroup']
+            emp_obj.mobile = request.POST['mobile']
+            emp_obj.emergency_contact = request.POST['generalphone']
+            emp_obj.employee_mail = request.POST['email']
+            emp_obj.fathers_name_mothers_name = request.POST['fathersmothersname']
+            emp_obj.spouse_name = request.POST['spousename']
+            emp_obj.upload_file = request.FILES.get('File', '') or ''
+            emp_obj.street = request.POST['street']
+            emp_obj.city = request.POST['city']
+            emp_obj.state = request.POST['state']
+            emp_obj.pincode = request.POST['pincode']
+            emp_obj.country = request.POST['country']
+            emp_obj.temporary_street = request.POST['tempstreet']
+            emp_obj.temporary_city = request.POST['tempcity']
+            emp_obj.temporary_state = request.POST['tempstate']
+            emp_obj.temporary_pincode = request.POST['temppincode']
+            emp_obj.temporary_country = request.POST['tempcountry']
+            emp_obj.provide_bank_details = request.POST['bankdetails']
+            emp_obj.account_number = request.POST['acno']
+            emp_obj.ifsc = request.POST['ifsccode']
+            emp_obj.name_of_bank = request.POST['bankname']
+            emp_obj.branch_name = request.POST['branchname']
+            emp_obj.bank_transaction_type = request.POST['transactiontype']
+            emp_obj.tds_applicable = request.POST['tds_applicable']
+            emp_obj.tds_type = request.POST['TDS_Type']
+            emp_obj.percentage_amount = request.POST['TDS_Amount'] if request.POST['TDS_Type'] == 'Amount' else request.POST['TDS_Percentage']
+            emp_obj.income_tax_number = request.POST['Income_Tax']
+            emp_obj.aadhar_number = request.POST['adharnumber']
+            emp_obj.universal_account_number = request.POST['universalaccountnumber']
+            emp_obj.pan_number = request.POST['pannumber']
+            emp_obj.pf_account_number = request.POST['pfaccountnumber']
+            emp_obj.pr_account_number = request.POST['praccountnumber']
+
+           
+
+            
+            emp_obj.save()
+            return redirect('Fin_salaryedit',employee_id,sal_id)
+
+        except Employee.DoesNotExist:
+            print('Employee Not Found')
+
+
+def Edit_getDays(request):
+     if 's_id' in request.session:
+        s_id = request.session['s_id']
+        data = Fin_Login_Details.objects.get(id = s_id)
+
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id = s_id)
+            company=com
+        
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id = s_id)
+            company=com.company_id
+
+        if request.method == 'POST':   
+            employee_id = request.POST.get('id')
+            empid = Employee.objects.get(id=employee_id)
+            month = request.POST.get('month')
+            year = request.POST.get('year')
+            month = int(month)
+            year = int(year)
+
+            try:
+                result = Fin_SalaryDetails.objects.get(employee=empid, month=month, year=year)
+                start_date = datetime(year, month, 1)
+                if month == 12:
+                    end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
+                else:
+                    end_date = datetime(year, month % 12 + 1, 1) - timedelta(days=1)
+                start_date = start_date.strftime("%Y-%m-%d")
+                end_date = end_date.strftime("%Y-%m-%d")
+
+                leave_count = Fin_Attendances.objects.filter(
+                    employee=empid,
+                    company=company,
+                    start_date__range=(start_date, end_date),
+                    status='Leave'
+                )
+
+
+                # Clculating leave days ----------------
+                count_leave = 0
+
+                for i in leave_count:
+                    x = i.end_date - i.start_date
+                    leave_days = x.days
+                    if leave_days == 0:
+                        leave_days = 1
+                    else:
+                        leave_days = leave_days + 1
+                    count_leave = int(count_leave + leave_days)
+
+
+
+                holidays_count = Holiday.objects.filter(company=company,start_date__range=(start_date, end_date)).count()
+
+                _, num_days = calendar.monthrange(year, month)
+                working_days = num_days - holidays_count
+                
+                try:
+                    return JsonResponse({
+                        'month': MONTH_NAMES.get(month, ''),
+                        'holiday': holidays_count,
+                        'leave': count_leave,   
+                        'working_days' : working_days, 
+                                
+                    }, safe=False)
+
+                except Employee.DoesNotExist:
+                    return JsonResponse({'error': 'Selected employee not found.'}, status=404)
+               
+                
+            except Fin_SalaryDetails.DoesNotExist:
+                    return JsonResponse({'error': 'Salary details not found.',
+                                         'month': MONTH_NAMES.get(month, ''),
+                        'holiday': 0,
+                        'leave': 0,   
+                        'working_days' : 0,}, status=404)
+
+               
+
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+def Fin_salarysave(request,employee_id,salary_id):
+    sal_obj = Fin_SalaryDetails.objects.get(id=salary_id)
+    sal_obj.status='save'
+    sal_obj.save()
+    return redirect('Fin_salary_overview',employee_id,salary_id)
